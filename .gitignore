@@ -1,0 +1,9 @@
+*.swp
+*.swo
+*.bak
+*.backup
+lazy-lock.json
+Session.vim
+swap/
+undodir/
+backup/

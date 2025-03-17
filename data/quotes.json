@@ -1,0 +1,227 @@
+{
+  "python": [
+    "🐍 Indentation jumpscares thrill me",
+    "🔧 Import this calms chaos",
+    "🛠️ Self screams good practices",
+    "🔨 List comprehensions enlighten all",
+    "⚡ Dunder methods confuse everyone",
+    "🚀 Asyncio zooms too fast",
+    "🎯 Type hints rule my world",
+    "🔩 Decorators twist my code",
+    "⚔️ Generators yield under stress",
+    "🛡️ Pip installs instant joy",
+    "⚙️ F-strings brighten dull days",
+    "🗡️ Metaclass magic explodes badly",
+    "🏃 Recursion loops forever ha",
+    "🦍 Monkey patches overrun jungles"
+  ],
+  "toggleterm": [
+    "🚀 Terminals nest like madness",
+    "⚡ Tmux who? Neovim wins",
+    "🔧 Split terms split my mind",
+    "💫 Floating terms feel dreamy",
+    "🎮 Extra steps for fun",
+    "🌟 Neovim traps me always"
+  ],
+  "mason": [
+    "🚀 LSP servers pile high",
+    "⚡ Formatters grow like weeds",
+    "🔧 Linters feed my soul",
+    "🎯 Server spree never ends",
+    "🛠️ Tools soothe my mess",
+    "🎮 Install all just because",
+    "🌟 Updates keep me busy"
+  ],
+  "lazy": [
+    "🚀 Plugins find their zen",
+    "⚡ Lazy loading saves me",
+    "🔧 Startup speeds thrill nerds",
+    "💫 Deps unravel so nicely",
+    "🎯 Specs crafted with care",
+    "🛠️ Lockfiles bring sweet peace",
+    "🎮 Configs morph my dreams",
+    "🌟 Compilation sparks pure joy"
+  ],
+  "neo-tree": [
+    "🚀 Tree nav feels epic",
+    "⚡ File browser looks cool",
+    "🔧 Buffers sort like magic",
+    "💫 Project zen washes over",
+    "🎯 Nested files reveal themselves",
+    "🛠️ Filesystem bliss kicks in",
+    "🎮 Directory dives excite me",
+    "🌟 Tree icons steal hearts"
+  ],
+  "javascript": [
+    "💀 Undefined errors strike again",
+    "⚡ Promise.all fixes everything maybe",
+    "🔨 Const let var tangle",
+    "🚀 Hoisting sneaks up quietly",
+    "🛠️ Prototype chains baffle me",
+    "⚔️ Optional chaining saves days",
+    "🎯 This points everywhere oops",
+    "🔥 Callback hell rocks on",
+    "🦾 Npm grabs the universe",
+    "🌪️ Event loop spins dizzy",
+    "⚡ Webpack config breaks brains",
+    "🛡️ Array methods calm storms"
+  ],
+  "typescript": [
+    "💀 Ts-ignore saves my sanity",
+    "🥶 Types trap me tight",
+    "🔧 Interfaces evolve too much",
+    "⚡ Inference pulls fancy tricks",
+    "🛠️ Union types shift perspectives",
+    "🔨 Satisfies operator feels nice",
+    "🚀 Generics juggle my mind",
+    "⚔️ Type roulette spins wild",
+    "🎯 Strict mode humbles coders",
+    "🗡️ Unknown beats any now",
+    "⚙️ Mapped types cast spells"
+  ],
+  "lua": [
+    "🌙 Tables eat my data",
+    "💀 1-based indexing haunts me",
+    "🔧 Metatables pull magic stunts",
+    "🔥 Pcall catches my falls",
+    "⚡ Coroutines finally click yay",
+    "🛠️ Garbage collector throws parties",
+    "🔨 Pairs fights ipairs daily",
+    "🚀 Nil flaunts its uniqueness",
+    "🎯 Dots concat so weird",
+    "⚔️ Local scope reigns supreme"
+  ],
+  "vim": [
+    "⚡ Vimscript climbs to heaven",
+    "🔧 Recursive maps confuse all",
+    "🛠️ Syntax highlights dazzle eyes",
+    "🔨 Modelines weave sneaky spells",
+    "🚀 Registers juggle my text",
+    "⚔️ Macros panic mid-record",
+    "🛡️ :wq battles ZZ hard",
+    "🎯 Visual block heals woes",
+    "🗡️ Undo tree grows tall",
+    "⚙️ Colorschemes steal my time"
+  ],
+  "json": [
+    "🔧 Formatting wars rage loud",
+    "🛠️ Schema validation feels good",
+    "🔨 Nested objects cry out",
+    "⚡ Comma debates burn on",
+    "💀 Parse errors sneak in",
+    "🚀 Pretty print soothes souls",
+    "🎯 Escapes trap me good"
+  ],
+  "yaml": [
+    "💀 Indentation errors bite hard",
+    "🔧 Anchors maze my brain",
+    "🛠️ Whitespace sensitivity kills me",
+    "🔨 Flow style confuses all",
+    "⚡ Triple dots look artsy",
+    "🚀 Tabs spark total chaos",
+    "⚔️ Multi-line strings twist fate",
+    "🎯 Quotes slip away fast"
+  ],
+  "markdown": [
+    "📝 Frontmatter hides fun secrets",
+    "🔧 Tables defy alignment laws",
+    "🛠️ Links vanish too often",
+    "🔨 Inline html stirs trouble",
+    "⚡ Checkboxes click with glee",
+    "🚀 Headings roll dice daily",
+    "🎯 Images resize so weird",
+    "⚔️ Code blocks guess wrong"
+  ],
+  "bash": [
+    "💀 Chmod perms go wild",
+    "🔥 Pipes flood my screen",
+    "⚡ Subshells stack too deep",
+    "🔧 Heredocs cloak my words",
+    "🛠️ Rm -rf haunts me",
+    "🔨 Sudo begs for mercy",
+    "🎯 Env vars maze me",
+    "🚀 Exit codes pile up"
+  ],
+  "fish": [
+    "🐟 Functions rhyme like poems",
+    "🔧 Substitutions draw pretty pics",
+    "🛠️ Completions write themselves wow",
+    "🔨 Univars party all night",
+    "⚡ Paths swim so free",
+    "🚀 Abbrs expand with glee",
+    "🎯 Fisher hooks me deep"
+  ],
+  "rust": [
+    "🦀 Borrow checker schools me",
+    "💀 Lifetimes paint my doom",
+    "🔧 Traits box me in",
+    "🛠️ Macros bloom too wild",
+    "🔨 Unsafe tempts me daily",
+    "⚡ Cargo worship grows strong",
+    "🎯 Matches fit so snug",
+    "🚀 Types enlighten my path"
+  ],
+  "sql": [
+    "💀 Select * regrets hit",
+    "🔥 Joins chain up chaos",
+    "🔧 Where clauses sing soft",
+    "🛠️ Drop table shocks me",
+    "🔨 Indexes speed my queries",
+    "⚡ Groups blur my view",
+    "🚀 Txns lock me tight",
+    "🎯 Nulls whisper sweet lies"
+  ],
+  "default": [
+    "🔧 Highlights throw wild parties",
+    "👁️ Saving feels so extra",
+    "🛠️ Undo tree branches out",
+    "🔨 Macros fumble mid-flight",
+    "⚡ Tabs overflow my life",
+    "🚀 Escape codes paint dreams",
+    "⚔️ Works locally they swear",
+    "🎯 Yesterday ran just fine",
+    "⚙️ Commit messages wax poetic",
+    "🛡️ Conflicts sharpen my skills",
+    "🔩 Docs fuel my hopes"
+  ],
+  "DiffViewFilePanel": [
+    "👀 Did I break it all",
+    "🔍 Console.logs hide in shame",
+    "📝 3am commits glare back",
+    "⚡ Merge conflicts loom near",
+    "🤔 Whose code is this mess",
+    "💭 Git blame fingers me",
+    "🎯 Semicolons play hide seek",
+    "🔧 Whitespace sneaks by unnoticed",
+    "🚨 Pre-push panic grips tight",
+    "🧐 Reviews make me squirm"
+  ],
+  "ministarter": ["🏠 Bugs crash my welcome", "⚡ Coffee jumpstarts my day"],
+  "help": [
+    "📚 Manuals mend my soul",
+    "❓ Help flags unearth gold",
+    "🔍 Man pages hold secrets",
+    "📖 RTFM wakes me up",
+    "💡 Usage confuses me still",
+    "🎓 Docs dive goes deep",
+    "🤔 Apropos finds weird stuff",
+    "📑 TLDR cuts my chase"
+  ],
+  "Telescope": [
+    "🔭 Fuzzy finds thrill me",
+    "🎯 Grep tears through all",
+    "🔍 Files zip by quick",
+    "⚡ Previews spoil me rotten",
+    "🚀 Buffers beg my gaze",
+    "💫 Regex heals my soul",
+    "🌟 Preview windows tease me",
+    "🎮 Ripgrep runs my life"
+  ],
+  "haskell": [
+    "🪦 Patterns match to death",
+    "🔧 Type classes tower high",
+    "🚀 Functors blend my dreams",
+    "🛠️ Monads stack real tall",
+    "🎯 Point-free fries my mind"
+  ]
+}

@@ -62,6 +62,11 @@ return {
 					"checkstyle",
 					"tflint",
 					"sqlfluff",
+
+                    "debugpy",
+					"codelldb",
+					"node-debug2-adapter",
+					"delve",
 				},
 				auto_update = false,
 				run_on_start = false,
@@ -121,6 +126,29 @@ return {
 			})
 		end,
 	},
+	{
+		"jay-babu/mason-nvim-dap.nvim",
+		dependencies = {
+			"williamboman/mason.nvim",
+			"mfussenegger/nvim-dap",
+		},
+		config = function()
+			require("mason-nvim-dap").setup({
+				ensure_installed = {
+					"python",
+					"delve",
+					"codelldb",
+					"node2",
+				},
+				automatic_installation = true,
+				handlers = {
+					function(config)
+						require("mason-nvim-dap").default_setup(config)
+					end,
+				},
+			})
+		end,
+	},
 
 	{
 		"neovim/nvim-lspconfig",
@@ -129,6 +157,8 @@ return {
 			"onsails/lspkind.nvim",
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/nvim-cmp",
+			"mfussenegger/nvim-dap",
+			"rcarriga/nvim-dap-ui",
 		},
 		config = function()
 			local cmp_nvim_lsp = require("cmp_nvim_lsp")

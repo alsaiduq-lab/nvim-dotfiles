@@ -16,20 +16,36 @@ return {
         end
 
         require("formatter").setup({
-            logging = true,
-            log_level = vim.log.levels.DEBUG, -- Temporarily set to DEBUG for more info
+            logging = false,
             filetype = {
                 lua = {
                     function()
                         return {
                             exe = "stylua",
-                            args = { "--search-parent-directories", "-" },
+                            args = {
+                                "--search-parent-directories",
+                                "--column-width", "120",
+                                "--indent-type", "Spaces",
+                                "--indent-width", "4",
+                                "-",
+                            },
                             stdin = true,
-                            try_node_modules = false, -- Disable Node.js lookup, irrelevant on Nix
                         }
                     end,
                 },
                 python = {
+                    function()
+                        return {
+                            exe = "ruff",
+                            args = {
+                                "format",
+                                "--line-length", "120",
+                                "--respect-gitignore",
+                                "-",
+                            },
+                            stdin = true,
+                        }
+                    end,
                     function()
                         return {
                             exe = "black",
@@ -38,31 +54,223 @@ return {
                         }
                     end,
                 },
-                javascript = { require("formatter.filetypes.javascript").prettier },
-                typescript = { require("formatter.filetypes.typescript").prettier },
-                javascriptreact = { require("formatter.filetypes.javascriptreact").prettier },
-                typescriptreact = { require("formatter.filetypes.typescriptreact").prettier },
-                json = { require("formatter.filetypes.json").prettier },
-                html = { require("formatter.filetypes.html").prettier },
-                css = { require("formatter.filetypes.css").prettier },
-                scss = { require("formatter.filetypes.css").prettier },
-                markdown = { require("formatter.filetypes.markdown").prettier },
-                yaml = { require("formatter.filetypes.yaml").yamlfmt },
-                rust = { require("formatter.filetypes.rust").rustfmt },
-                go = { require("formatter.filetypes.go").gofmt },
-                c = { require("formatter.filetypes.c").clangformat },
-                cpp = { require("formatter.filetypes.cpp").clangformat },
-                nix = {
+                javascript = {
                     function()
                         return {
-                            exe = "alejandra",
-                            args = { "--quiet" },
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--single-quote",
+                                "--tab-width", "2",
+                            },
                             stdin = true,
                         }
                     end,
                 },
-                sh = { require("formatter.filetypes.sh").shfmt },
-                ["*"] = { require("formatter.filetypes.any").remove_trailing_whitespace },
+                typescript = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--single-quote",
+                                "--tab-width", "2",
+                                "--parser", "typescript",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                javascriptreact = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--single-quote",
+                                "--tab-width", "2",
+                                "--parser", "jsx",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                typescriptreact = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--single-quote",
+                                "--tab-width", "2",
+                                "--parser", "tsx",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                json = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser", "json",
+                                "--tab-width", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                html = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser", "html",
+                                "--tab-width", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                css = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser", "css",
+                                "--tab-width", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                scss = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser", "scss",
+                                "--tab-width", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                markdown = {
+                    function()
+                        return {
+                            exe = "prettier",
+                            args = {
+                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser", "markdown",
+                                "--prose-wrap", "always",
+                                "--tab-width", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                yaml = {
+                    function()
+                        return {
+                            exe = "yamlfmt",
+                            args = {
+                                "-in",
+                                "-formatter",
+                                "indent=2,retain_line_breaks=true",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                rust = {
+                    function()
+                        return {
+                            exe = "rustfmt",
+                            args = {
+                                "--edition", "2021",
+                                "--config", "tab_spaces=4",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                go = {
+                    function()
+                        return {
+                            exe = "gofmt",
+                            args = { "-s" },
+                            stdin = true,
+                        }
+                    end,
+                    function()
+                        return {
+                            exe = "goimports",
+                            args = { "-w" },
+                            stdin = true,
+                        }
+                    end,
+                },
+                c = {
+                    function()
+                        return {
+                            exe = "clang-format",
+                            args = {
+                                "--style={BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 120}",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                cpp = {
+                    function()
+                        return {
+                            exe = "clang-format",
+                            args = {
+                                "--style={BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 120}",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                nix = {
+                    function()
+                        return {
+                            exe = "alejandra",
+                            args = { "--quiet", "--threads", "4" },
+                            stdin = true,
+                        }
+                    end,
+                },
+                sh = {
+                    function()
+                        return {
+                            exe = "shfmt",
+                            args = { "-i", "2", "-ci", "-bn" },
+                            stdin = true,
+                        }
+                    end,
+                },
+                sql = {
+                    function()
+                        return {
+                            exe = "sql-formatter",
+                            args = {
+                                "--language", "sql",
+                                "--indent", "2",
+                            },
+                            stdin = true,
+                        }
+                    end,
+                },
+                ["*"] = {
+                    require("formatter.filetypes.any").remove_trailing_whitespace,
+                },
             },
         })
 
@@ -81,7 +289,8 @@ return {
 
             local format_on_save_filetypes = {
                 "lua", "python", "javascript", "typescript", "javascriptreact", "typescriptreact",
-                "json", "html", "css", "scss", "yaml", "rust", "go", "nix"
+                "json", "html", "css", "scss", "yaml", "rust", "go", "nix", "c", "cpp",
+                "markdown", "sh", "sql",
             }
 
             if not vim.tbl_contains(format_on_save_filetypes, ft) then
@@ -90,7 +299,7 @@ return {
 
             local win_view = vim.fn.winsaveview()
             local success, err = pcall(function()
-                vim.cmd("FormatWrite")
+                vim.cmd("silent! FormatWrite")
             end)
             vim.fn.winrestview(win_view)
 

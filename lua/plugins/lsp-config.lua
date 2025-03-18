@@ -1,36 +1,98 @@
 return {
 	{
 		"williamboman/mason.nvim",
+		lazy = false,
+		priority = 100,
 		config = function()
 			require("mason").setup({
 				ui = {
 					icons = {
 						package_installed = "󰄬 ",
 						package_pending = "󰦖 ",
-						package_uninstalled = "󰚌 "
+						package_uninstalled = "󰰱 "
 					},
-					border = "rounded"
+					border = "rounded",
+					check_outdated_packages_on_open = false
 				}
 			})
 		end,
 	},
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		lazy = false,
+		priority = 90,
 		dependencies = { "williamboman/mason.nvim" },
 		config = function()
+			local state_file = vim.fn.stdpath("data") .. "/mason_tools_installed"
+			local tools_installed = false
+
+			local f = io.open(state_file, "r")
+			if f then
+				tools_installed = true
+				f:close()
+			end
+
 			require("mason-tool-installer").setup({
 				ensure_installed = {
-					"alejandra",  -- Nix formatter
-					"black",      -- Python formatter
-					"prettier",   -- Web formatting
-					"eslint_d",   -- JavaScript/TypeScript linter (daemon)
-					"mypy",       -- Python type checker
-					"shellcheck", -- Shell script analysis
-					"ts-standard" -- TypeScript standard style
+					"alejandra",
+					"black",
+					"prettier",
+					"stylua",
+					"ruff",
+					"clang-format",
+					"shfmt",
+					"sql-formatter",
+					"yamlfmt",
+
+					"eslint_d",
+					"luacheck",
+					"flake8",
+					"markdownlint",
+					"stylelint",
+					"htmlhint",
+					"yamllint",
+					"jsonlint",
+					"hadolint",
+					"shellcheck",
+					"cppcheck",
+					"staticcheck",
+					"rubocop",
+					"phpcs",
+					"phpstan",
+					"checkstyle",
+					"tflint",
+					"sqlfluff",
 				},
-				auto_update = true,
-				run_on_start = true,
+				auto_update = false,
+				run_on_start = false,
+				start_delay = 3000,
+				debounce_hours = 24,
 			})
+
+			if not tools_installed then
+				vim.defer_fn(function()
+					vim.cmd("MasonToolsInstall")
+
+					local state = io.open(state_file, "w")
+					if state then
+						state:write("installed")
+						state:close()
+					end
+
+					vim.notify("Mason tools installation triggered", vim.log.levels.INFO, {
+						title = "Mason",
+						timeout = 3000,
+					})
+				end, 5000)
+			end
+
+			vim.api.nvim_create_user_command("MasonToolsForceInstall", function()
+				vim.cmd("MasonToolsInstall")
+				vim.notify("Mason tools installation forced", vim.log.levels.INFO, {
+					title = "Mason",
+					timeout = 2000,
+				})
+			end, { desc = "Force Mason tools installation" })
 		end,
 	},
 	{
@@ -163,13 +225,13 @@ return {
 				desc = "LSP actions",
 				callback = function(event)
 					local opts = { buffer = event.buf }
-					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-					vim.keymap.set("n", "go", vim.lsp.buf.type_definition, opts)
-					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+					vim.keymap.set("n", "Ld", vim.lsp.buf.definition, opts)
+					vim.keymap.set("n", "LD", vim.lsp.buf.declaration, opts)
+					vim.keymap.set("n", "Li", vim.lsp.buf.implementation, opts)
+					vim.keymap.set("n", "Lo", vim.lsp.buf.type_definition, opts)
+					vim.keymap.set("n", "Lr", vim.lsp.buf.references, opts)
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-					vim.keymap.set("n", "gs", vim.lsp.buf.signature_help, opts)
+					vim.keymap.set("n", "Ls", vim.lsp.buf.signature_help, opts)
 					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 					vim.keymap.set({ "n", "x" }, "<F3>", function()

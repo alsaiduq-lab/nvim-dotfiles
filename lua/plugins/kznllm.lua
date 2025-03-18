@@ -129,7 +129,7 @@ return {
 
           return message
         end
-      end 
+      end
 
       local model_configs = {
         local_models = {
@@ -346,4 +346,3 @@ return {
     end,
   }
 }
-

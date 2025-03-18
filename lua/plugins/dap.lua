@@ -11,6 +11,8 @@ return {
 		"rcarriga/nvim-notify",
 		"stevearc/dressing.nvim",
 		"folke/neodev.nvim",
+		"mxsdev/nvim-dap-vscode-js",
+		"jay-babu/mason-nvim-dap.nvim",
 	},
 	lazy = false,
 	config = function()
@@ -18,6 +20,20 @@ return {
 			local dap = require("dap")
 			local dapui = require("dapui")
 			local notify = require("notify")
+
+			require("mason-nvim-dap").setup({
+				ensure_installed = {
+					"python",
+					"delve",
+					"codelldb",
+					"node2",
+					"php",
+					"chrome",
+					"bash",
+					"cppdbg",
+				},
+				automatic_installation = true,
+			})
 
 			vim.fn.sign_define("DapBreakpoint", { text = "🛑", texthl = "DapBreakpoint", linehl = "", numhl = "" })
 			vim.fn.sign_define(
@@ -42,6 +58,21 @@ return {
 				pattern = "python",
 				callback = function()
 					require("dap-python").setup()
+					table.insert(dap.configurations.python, {
+						type = "python",
+						request = "launch",
+						name = "Django",
+						program = "${workspaceFolder}/manage.py",
+						args = { "runserver", "--noreload" },
+						django = true,
+					})
+					table.insert(dap.configurations.python, {
+						type = "python",
+						request = "launch",
+						name = "FastAPI",
+						module = "uvicorn",
+						args = { "main:app", "--reload" },
+					})
 					notify_dap("Python debugger configured", "info")
 				end,
 			})
@@ -77,27 +108,65 @@ return {
 			})
 
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = { "javascript", "typescript" },
+				pattern = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
 				callback = function()
-					dap.adapters.node2 = {
-						type = "executable",
-						command = "node",
-						args = { vim.fn.stdpath("data") .. "/mason/packages/node-debug2-adapter/out/src/nodeDebug.js" },
-					}
+					require("dap-vscode-js").setup({
+						debugger_path = vim.fn.stdpath("data") .. "/mason/packages/node-debug2-adapter",
+						adapters = { "node-terminal", "chrome", "pwa-node", "pwa-chrome" },
+					})
 
 					dap.configurations.javascript = {
 						{
-							type = "node2",
+							type = "pwa-node",
 							request = "launch",
+							name = "Launch Node.js Program",
 							program = "${file}",
-							cwd = vim.fn.getcwd(),
+							cwd = "${workspaceFolder}",
 							sourceMaps = true,
-							protocol = "inspector",
+						},
+						{
+							type = "pwa-chrome",
+							request = "launch",
+							name = "Launch Chrome against localhost",
+							url = "http://localhost:3000",
+							webRoot = "${workspaceFolder}",
+							userDataDir = "${workspaceFolder}/.vscode/chrome-debug-profile",
+						},
+						{
+							type = "pwa-node",
+							request = "launch",
+							name = "Launch Node.js with Express",
+							program = "${workspaceFolder}/node_modules/.bin/nodemon",
+							args = { "${workspaceFolder}/app.js" },
+							cwd = "${workspaceFolder}",
 							console = "integratedTerminal",
+							internalConsoleOptions = "neverOpen",
 						},
 					}
 
-					dap.configurations.typescript = dap.configurations.javascript
+					dap.configurations.typescript = {
+						{
+							type = "pwa-node",
+							request = "launch",
+							name = "Launch TS Node.js Program",
+							program = "${file}",
+							runtimeExecutable = "ts-node",
+							cwd = "${workspaceFolder}",
+							sourceMaps = true,
+						},
+						{
+							type = "pwa-chrome",
+							request = "launch",
+							name = "Launch Chrome against localhost",
+							url = "http://localhost:3000",
+							webRoot = "${workspaceFolder}",
+							userDataDir = "${workspaceFolder}/.vscode/chrome-debug-profile",
+						},
+					}
+
+					dap.configurations.javascriptreact = dap.configurations.javascript
+					dap.configurations.typescriptreact = dap.configurations.typescript
+
 					notify_dap("JavaScript/TypeScript debugger configured", "info")
 				end,
 			})
@@ -128,12 +197,115 @@ return {
 							end,
 							cwd = "${workspaceFolder}",
 							stopOnEntry = false,
+							args = {},
+						},
+						{
+							name = "Attach to process",
+							type = "codelldb",
+							request = "attach",
+							pid = function()
+								local handle = io.popen("ps -a | grep -v grep | sort -k 1")
+								local output = handle:read("*a")
+								handle:close()
+								local lines = {}
+								for s in output:gmatch("[^\r\n]+") do
+									table.insert(lines, s)
+								end
+								local options = {}
+								for _, line in ipairs(lines) do
+									local pid = line:match("^%s*(%d+)")
+									table.insert(options, pid .. ": " .. line)
+								end
+								local choice = vim.fn.inputlist({
+									"Select process to attach to:",
+									unpack(options)
+								})
+								if choice < 1 or choice > #options then
+									return nil
+								end
+								return tonumber(options[choice]:match("^%s*(%d+)"))
+							end,
+							args = {},
 						},
 					}
 
 					dap.configurations.c = dap.configurations.cpp
 					dap.configurations.rust = dap.configurations.cpp
 					notify_dap("C/C++/Rust debugger configured", "info")
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "php",
+				callback = function()
+					dap.adapters.php = {
+						type = "executable",
+						command = "node",
+						args = { vim.fn.stdpath("data") .. "/mason/packages/php-debug-adapter/extension/out/phpDebug.js" },
+					}
+
+					dap.configurations.php = {
+						{
+							type = "php",
+							request = "launch",
+							name = "Listen for Xdebug",
+							port = 9003,
+							pathMappings = {
+								["/var/www/html"] = "${workspaceFolder}",
+							},
+						},
+					}
+					notify_dap("PHP debugger configured", "info")
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "java",
+				callback = function()
+					dap.configurations.java = {
+						{
+							type = "java",
+							request = "attach",
+							name = "Debug (Attach) - Remote",
+							hostName = "127.0.0.1",
+							port = 5005,
+						},
+					}
+					notify_dap("Java debugger configured", "info")
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = { "sh", "bash", "zsh" },
+				callback = function()
+					dap.adapters.bashdb = {
+						type = "executable",
+						command = vim.fn.stdpath("data") .. "/mason/packages/bash-debug-adapter/bash-debug-adapter",
+						name = "bashdb",
+					}
+
+					dap.configurations.sh = {
+						{
+							type = "bashdb",
+							request = "launch",
+							name = "Launch Bash script",
+							showDebugOutput = true,
+							pathBashdb = vim.fn.stdpath("data") .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir/bashdb",
+							pathBashdbLib = vim.fn.stdpath("data") .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir",
+							trace = true,
+							file = "${file}",
+							program = "${file}",
+							cwd = "${workspaceFolder}",
+							pathCat = "cat",
+							pathBash = "/bin/bash",
+							pathMkfifo = "mkfifo",
+							pathPkill = "pkill",
+							args = {},
+							env = {},
+							terminalKind = "integrated",
+						}
+					}
+					notify_dap("Shell script debugger configured", "info")
 				end,
 			})
 
@@ -174,6 +346,11 @@ return {
 					mappings = {
 						close = { "q", "<Esc>" },
 					},
+				},
+				windows = { indent = 1 },
+				render = {
+					max_type_length = nil,
+					max_value_lines = 100
 				},
 			})
 
@@ -243,6 +420,12 @@ return {
 				local widgets = require("dap.ui.widgets")
 				widgets.centered_float(widgets.scopes)
 			end, { desc = "Scopes" })
+			vim.keymap.set("n", "<leader>Du", function()
+				dapui.toggle()
+			end, { desc = "Toggle DAP UI" })
+			vim.keymap.set("n", "<leader>De", function()
+				dapui.eval()
+			end, { desc = "Evaluate Expression" })
 		end)
 	end,
 }

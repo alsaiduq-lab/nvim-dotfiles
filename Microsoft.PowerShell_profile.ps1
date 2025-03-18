@@ -20,7 +20,6 @@ $ErrorActionPreference = 'SilentlyContinue'
 if ($null -eq $env:DISCORD_IPC_PATH) {
     $discordPipe = "\\.\pipe\discord-ipc-0"
     $vestopPipe = Join-Path $env:APPDATA "vesktop\discord-ipc-0"
-    
     $env:DISCORD_IPC_PATH = if (Test-Path $vestopPipe) {
         $vestopPipe
     } else {
@@ -121,7 +120,6 @@ function backup {
         [Parameter(Mandatory=$true, Position=0)]
         [string]$filename
     )
-    
     if (Test-Path $filename) {
         try {
             Copy-Item $filename "$filename.bak" -ErrorAction Stop
@@ -151,11 +149,9 @@ function copy {
     param(
         [Parameter(Mandatory=$true, Position=0)]
         [string]$from,
-        
         [Parameter(Position=1)]
         [string]$to
     )
-    
     try {
         if ((Test-Path $from -PathType Container) -and $to) {
             Copy-Item -Path $from -Destination $to -Recurse -ErrorAction Stop
@@ -186,7 +182,6 @@ function Find-File {
         [Parameter(Mandatory=$true, Position=0)]
         [string]$name
     )
-    
     try {
         $results = Get-ChildItem -Recurse -Filter "*$name*" | Select-Object FullName
         if ($results) {
@@ -292,7 +287,6 @@ $fileTypes = @{
     '.mobi' = '📚'; '.azw3' = '📚'; '.azw'  = '📚'
     '.ppt'  = '📊'; '.pptx' = '📊'; '.key'  = '📊'
     '.pages'= '📄'; '.gdoc' = '📄'; '.gdraw'= '🎨'
-    
     # Source Code
     '.ps1'  = '💠'; '.psm1' = '💠'; '.psd1' = '💠'
     '.py'   = '🐍'; '.pyc'  = '🐍'; '.pyw'  = '🐍'
@@ -313,7 +307,6 @@ $fileTypes = @{
     '.zsh'  = '🌰'; '.bash' = '🐚'; '.pl'   = '🐪'
     '.php'  = '🐘'; '.sql'  = '🗃️'; '.rb'   = '💎'
     '.rkt'  = '🍇'; '.clj'  = '🍏'; '.erl'  = '📡'
-    
     # Media
     '.jpg'  = '🖼️'; '.jpeg' = '🖼️'; '.png'  = '🖼️'
     '.gif'  = '🎬'; '.mp4'  = '🎥'; '.mov'  = '🎥'
@@ -325,7 +318,6 @@ $fileTypes = @{
     '.psd'  = '🎨'; '.ai'   = '🎨'; '.xcf'  = '🎨'
     '.tiff' = '🖼️'; '.bmp'  = '🖼️'; '.cr2'  = '📸'
     '.mpeg' = '🎥'; '.m2ts' = '🎥'; '.3gp'  = '🎥'
-    
     # Archives
     '.zip'  = '📦'; '.rar'  = '📦'; '.7z'   = '📦'
     '.tar'  = '📦'; '.gz'   = '📦'; '.bz2'  = '📦'
@@ -333,36 +325,29 @@ $fileTypes = @{
     '.tgz'  = '📦'; '.tbz2' = '📦'; '.lz4'  = '📦'
     '.cab'  = '📦'; '.dmg'  = '💿'; '.s7z'  = '📦'
     '.arj'  = '📦'; '.deb'  = '📦'; '.rpm'  = '📦'
-    
     # Executables and Scripts
     '.exe'  = '⚡'; '.bat'  = '⚡'; '.cmd'  = '⚡'
     '.msi'  = '📥'; '.app'  = '📱'; '.apk'  = '📱'
     '.vbs'  = '⚡'; '.lnk'  = '🔗'
     '.cgi'  = '⚙️'; '.bin'  = '💾'; '.run'  = '⚡'
-    
     # Configuration
     '.ini'  = '⚙️'; '.cfg'  = '⚙️'; '.yml'  = '📝'
     '.yaml' = '📝'; '.conf' = '⚙️'; '.env'  = '🔒'
     '.toml' = '⚙️'; '.config' = '⚙️'; '.prefs' = '⚙️'
-    
     # Git and Version Control
     '.gitignore' = '🚫'; '.gitattributes' = '📋'
     '.gitmodules' = '🔗'; '.diff' = '📝'; '.patch' = '🔨'
-    
     # Web Development
     '.wasm' = '⚡'; '.elm'  = '🌳'; '.coffee' = '☕'
     '.asp'  = '🌐'; '.aspx' = '🌐'; '.cshtml' = '🌐'
-    
     # Database
     '.sqlite'= '🗃️'; '.mdb'  = '🗃️'; '.accdb'= '🗃️'
     '.pgsql' = '🐘'; '.mongodb' = '🍃'; '.redis' = '🔴'
     '.cql'   = '🗄️'; '.ora'  = '🗄️'
-    
     # Container and Cloud
     '.dockerfile' = '🐳'; '.docker' = '🐳'
     '.tf'   = '☁️'; '.tfstate' = '☁️'
     '.k8s'  = '☸️'; '.aws'  = '☁️'; '.azure' = '☁️'
-    
     # Other
     '.log'  = '📋'; '.bak'  = '🔄'; '.tmp'  = '⏳'
     '.dll'  = '🔧'; '.sys'  = '💻'
@@ -371,7 +356,6 @@ $fileTypes = @{
     '.torrent' = '📡'; '.backup' = '🔄'
     '.DS_Store' = '📁'; '.Thumbs.db' = '🖼️'
 }
-    
     # Initialize counters at root level
     if ($IndentLevel -eq 0) {
         $script:dirCount = 0
@@ -519,15 +503,13 @@ function Add-Key {
         [string]$Value,
         [switch]$AddToEnv
     )
-    
     $apiKeysDir = Join-Path $HOME "AppData\Local\ApiKeys"
     if (!(Test-Path $apiKeysDir)) {
         New-Item -Path $apiKeysDir -ItemType Directory -Force | Out-Null
     }
     $keyPath = Join-Path $apiKeysDir "$Name.key"
-    
-    $Value | ConvertTo-SecureString -AsPlainText -Force | 
-        ConvertFrom-SecureString | 
+    $Value | ConvertTo-SecureString -AsPlainText -Force |
+        ConvertFrom-SecureString |
         Set-Content $keyPath
 
     if ($AddToEnv) {
@@ -556,10 +538,8 @@ function Get-Key {
         [Parameter(Mandatory=$true)]
         [string]$Name
     )
-    
     $apiKeysDir = Join-Path $HOME "AppData\Local\ApiKeys"
     $keyPath = Join-Path $apiKeysDir "$Name.key"
-    
     if (Test-Path $keyPath) {
         $secureString = Get-Content $keyPath | ConvertTo-SecureString
         $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
@@ -574,10 +554,8 @@ function Remove-Key {
         [string]$Name,
         [switch]$RemoveFromEnv
     )
-    
     $apiKeysDir = Join-Path $HOME "AppData\Local\ApiKeys"
     $keyPath = Join-Path $apiKeysDir "$Name.key"
-    
     if (Test-Path $keyPath) {
         Remove-Item $keyPath
         if ($RemoveFromEnv) {
@@ -589,7 +567,6 @@ function Remove-Key {
 function Show-Keys {
     $apiKeysDir = Join-Path $HOME "AppData\Local\ApiKeys"
     if (!(Test-Path $apiKeysDir)) { return }
-    
     $keys = Get-ChildItem -Path $apiKeysDir -Filter "*.key"
     if ($keys) {
         $keys | ForEach-Object {

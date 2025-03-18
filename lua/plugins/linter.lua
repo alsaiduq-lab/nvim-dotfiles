@@ -12,7 +12,7 @@ return {
 			javascriptreact = { "eslint" },
 			typescriptreact = { "eslint" },
 			python = { "ruff" },
-			lua = { "selene" },
+			lua = { "luacheck", "selene" },
 			markdown = { "vale" },
 			css = { "stylelint" },
 			html = { "htmlhint" },
@@ -48,26 +48,36 @@ return {
 			graphql = { "graphql-lint" },
 		}
 
+		if lint.linters.luacheck then
+			lint.linters.luacheck.args = {
+				"--globals", "vim",
+				"--no-max-line-length",
+				"--no-unused-args",
+				"-"
+			}
+		end
+
 		local M = {
 			timer = nil,
 			disabled_linters = {},
 		}
 
-		-- Function to get available linters for the current filetype
 		local function get_available_linters(ft)
 			local linters = lint.linters_by_ft[ft] or {}
 			local available_linters = {}
 
 			for _, linter in ipairs(linters) do
-				if mason_registry.is_installed(linter) then
-					table.insert(available_linters, linter)
-				else
-					local handle = io.popen("which " .. linter .. " 2>/dev/null")
-					if handle then
-						local result = handle:read("*a")
-						handle:close()
-						if result ~= "" then
-							table.insert(available_linters, linter)
+				if lint.linters[linter] then
+					if mason_registry.is_installed(linter) then
+						table.insert(available_linters, linter)
+					else
+						local handle = io.popen("which " .. linter .. " 2>/dev/null")
+						if handle then
+							local result = handle:read("*a")
+							handle:close()
+							if result ~= "" then
+								table.insert(available_linters, linter)
+							end
 						end
 					end
 				end
@@ -76,7 +86,6 @@ return {
 			return available_linters
 		end
 
-		-- Function to pass available linters to Telescope
 		local function get_linters_for_telescope()
 			local ft = vim.bo.filetype
 			local available_linters = get_available_linters(ft)
@@ -92,10 +101,10 @@ return {
 			return options
 		end
 
-		-- Try to lint the current buffer
 		local function try_lint()
 			if M.timer then
 				M.timer:stop()
+				M.timer = nil
 			end
 
 			M.timer = vim.defer_fn(function()
@@ -105,9 +114,15 @@ return {
 				end
 
 				local ft = vim.bo[bufnr].filetype
-				local linters = lint.linters_by_ft[ft] or {}
+				if ft == "" then
+					return
+				end
 
-				-- Filter out disabled linters
+				local linters = lint.linters_by_ft[ft] or {}
+				if #linters == 0 then
+					return
+				end
+
 				local active_linters = vim.tbl_filter(function(linter)
 					return not M.disabled_linters[linter]
 				end, linters)
@@ -116,60 +131,62 @@ return {
 					return
 				end
 
-				-- Check if any of the active linters are available
 				local available_linters = get_available_linters(ft)
-
 				if #available_linters == 0 then
-					local message = "No available linters for " .. ft
-					notify(message, "warn", {
-						title = "Linting",
-						timeout = 2000,
-					})
 					return
 				end
 
-				-- Debug output to see what linters are available
-				print("Available linters for " .. ft .. ": " .. vim.inspect(available_linters))
-
-				local done = false
-				vim.defer_fn(function()
-					if not done then
-						notify("Linting timeout", "error", {
-							title = "Linting",
-							timeout = 2000,
-						})
-					end
-				end, 10000)
-
-				-- Correctly pass the first available linter to lint.try_lint
-				pcall(function()
-					for _, linter in ipairs(available_linters) do
-						lint.linters[ft] = linter
-						lint.try_lint()
-						break
-					end
-					done = true
-				end)
+				lint.try_lint(available_linters)
 			end, 300)
 		end
 
-		-- Toggle a specific linter on/off
 		local function toggle_linter(linter_name)
 			M.disabled_linters[linter_name] = not M.disabled_linters[linter_name]
 			local status = M.disabled_linters[linter_name] and "disabled" or "enabled"
-			notify(string.format("Linter %s %s", linter_name, status), "info", {
-				title = "Linting",
+			local icon = M.disabled_linters[linter_name] and "󰜺" or "󰄬"
+			notify(string.format("%s Linter %s %s", icon, linter_name, status), "info", {
+				title = "󰛩 Linting",
 				timeout = 2000,
+			})
+			if not M.disabled_linters[linter_name] then
+				try_lint()
+			end
+		end
+
+		local function show_linter_status()
+			local ft = vim.bo.filetype
+			local linters = lint.linters_by_ft[ft] or {}
+			local available = get_available_linters(ft)
+			if #linters == 0 then
+				notify("No linters configured for " .. ft, "warn", {
+					title = "󰛩 Linting Status",
+				})
+				return
+			end
+			local status_msg = "Linters for " .. ft .. ":\n"
+			for _, linter in ipairs(linters) do
+				local is_available = vim.tbl_contains(available, linter)
+				local is_enabled = not M.disabled_linters[linter]
+				local status_icon = is_enabled and "󰄬" or "󰜺"
+				local avail_icon = is_available and "󰏫" or "󰏮"
+				status_msg = status_msg .. string.format("%s %s %s\n", status_icon, avail_icon, linter)
+			end
+			notify(status_msg, "info", {
+				title = "󰛩 Linting Status",
+				timeout = 5000,
 			})
 		end
 
-		-- Setup autocmd to run linting after writing a file
 		vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-			callback = try_lint,
+			callback = function()
+				local bufnr = vim.api.nvim_get_current_buf()
+				if vim.api.nvim_buf_is_valid(bufnr) then
+					try_lint()
+				end
+			end,
 		})
 
-		-- Key mappings for linting
-		vim.keymap.set("n", "<leader>lt", try_lint, { desc = "   Trigger linting" })
+		vim.keymap.set("n", "<leader>lt", try_lint, { desc = "󰛩  Trigger linting" })
 		vim.keymap.set("n", "<leader>lc", function()
 			local ft = vim.bo.filetype
 			local linters = lint.linters_by_ft[ft] or {}
@@ -190,9 +207,9 @@ return {
 					toggle_linter(choice.value)
 				end
 			end)
-		end, { desc = "   Linters" })
+		end, { desc = "󰒓  Toggle linters" })
+		vim.keymap.set("n", "<leader>ls", show_linter_status, { desc = "󰋼  Show linter status" })
 
-		-- Diagnostic configuration
 		vim.diagnostic.config({
 			underline = true,
 			virtual_text = true,
@@ -201,16 +218,27 @@ return {
 			severity_sort = true,
 		})
 
-		-- Custom signs for diagnostics
 		local signs = {
-			Error = "✖",
-			Warn = "⚠",
-			Hint = "➤",
-			Info = "ℹ",
+			Error = "󰅚 ",
+			Warn = "󰀪 ",
+			Hint = "󰌶 ",
+			Info = "󰋽 ",
 		}
 		for type, icon in pairs(signs) do
 			local hl = "DiagnosticSign" .. type
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 		end
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = "*",
+			callback = function(ev)
+				if ev.buf and vim.api.nvim_buf_is_valid(ev.buf) and vim.bo[ev.buf].filetype ~= "" then
+					vim.defer_fn(function()
+						if vim.api.nvim_buf_is_valid(ev.buf) then
+							try_lint()
+						end
+					end, 2000)
+				end
+			end,
+		})
 	end,
 }

@@ -1,123 +1,36 @@
-_G.vim = vim
 return {
 	{
-		"hrsh7th/nvim-cmp",
-		event = "InsertEnter",
-		dependencies = {
-			"hrsh7th/cmp-nvim-lsp",
-			"hrsh7th/cmp-buffer",
-			"hrsh7th/cmp-path",
-			"saadparwaiz1/cmp_luasnip",
-			"L3MON4D3/LuaSnip",
-			"rafamadriz/friendly-snippets",
-			"onsails/lspkind.nvim",
-		},
+		"williamboman/mason.nvim",
 		config = function()
-			local cmp = require("cmp")
-			local luasnip = require("luasnip")
-			local lspkind = require("lspkind")
-			require("luasnip.loaders.from_vscode").lazy_load()
-
-			local has_words_before = function()
-				unpack = unpack or table.unpack
-				local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-				return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-			end
-
-			cmp.setup({
-				snippet = {
-					expand = function(args)
-						luasnip.lsp_expand(args.body)
-					end,
-				},
-				mapping = {
-					["<C-b>"] = cmp.mapping.scroll_docs(-4),
-					["<C-f>"] = cmp.mapping.scroll_docs(4),
-					["<C-Space>"] = cmp.mapping.complete(),
-					["<C-e>"] = cmp.mapping.abort(),
-					["<CR>"] = cmp.mapping.confirm({ select = true }),
-					["<Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_next_item()
-						elseif luasnip.expand_or_jumpable() then
-							luasnip.expand_or_jump()
-						elseif has_words_before() then
-							cmp.complete()
-						else
-							fallback()
-						end
-					end, { "i", "s" }),
-					["<S-Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_prev_item()
-						elseif luasnip.jumpable(-1) then
-							luasnip.jump(-1)
-						else
-							fallback()
-						end
-					end, { "i", "s" }),
-					["<C-h>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_prev_item()
-						elseif luasnip.jumpable(-1) then
-							luasnip.jump(-1)
-						else
-							fallback()
-						end
-					end, { "i", "s" }),
-				},
-				sources = {
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-					{ name = "buffer" },
-					{ name = "path" },
-				},
-				formatting = {
-					format = lspkind.cmp_format({
-						mode = "symbol_text",
-						maxwidth = 50,
-						ellipsis_char = "...",
-						menu = {
-							nvim_lsp = "[LSP]",
-							luasnip = "[Snippet]",
-							buffer = "[Buffer]",
-							path = "[Path]",
-						},
-					}),
-				},
-				completion = {
-					completeopt = "menu,menuone,noselect",
-				},
-			})
-
-			vim.api.nvim_set_keymap("i", "<S-Tab>", "<C-p>", { noremap = true, silent = true })
-			vim.api.nvim_set_keymap("i", "<C-h>", "<C-p>", { noremap = true, silent = true })
-			vim.cmd([[
-				inoremap <S-Tab> <C-p>
-				inoremap <C-h> <C-p>
-			]])
-
-			cmp.setup.cmdline("/", {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = {
-					{ name = "buffer" },
-				},
-			})
-
-			cmp.setup.cmdline(":", {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = cmp.config.sources({
-					{ name = "path" },
-				}, {
-					{ name = "cmdline" },
-				}),
+			require("mason").setup({
+				ui = {
+					icons = {
+						package_installed = "󰄬 ",
+						package_pending = "󰦖 ",
+						package_uninstalled = "󰚌 "
+					},
+					border = "rounded"
+				}
 			})
 		end,
 	},
 	{
-		"williamboman/mason.nvim",
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		dependencies = { "williamboman/mason.nvim" },
 		config = function()
-			require("mason").setup()
+			require("mason-tool-installer").setup({
+				ensure_installed = {
+					"alejandra",  -- Nix formatter
+					"black",      -- Python formatter
+					"prettier",   -- Web formatting
+					"eslint_d",   -- JavaScript/TypeScript linter (daemon)
+					"mypy",       -- Python type checker
+					"shellcheck", -- Shell script analysis
+					"ts-standard" -- TypeScript standard style
+				},
+				auto_update = true,
+				run_on_start = true,
+			})
 		end,
 	},
 	{
@@ -125,10 +38,28 @@ return {
 		dependencies = { "williamboman/mason.nvim" },
 		config = function()
 			require("mason-lspconfig").setup({
-				ensure_installed = { "lua_ls", "clangd", "cssls", "html", "pyright", "gopls", "denols" },
+				ensure_installed = {
+					"rust_analyzer",
+					"clangd",
+					"cssls",
+					"denols",
+					"eslint",
+					"gopls",
+					"html",
+					"jsonls",
+					"lua_ls",
+					"marksman",
+					"nginx_language_server",
+					"nil_ls",
+					"pyright",
+					"ruff_lsp",
+					"taplo",
+					"yamlls",
+				},
 			})
 		end,
 	},
+
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
@@ -141,9 +72,7 @@ return {
 			local cmp_nvim_lsp = require("cmp_nvim_lsp")
 			local lspconfig = require("lspconfig")
 			local lspkind = require("lspkind")
-
 			lspkind.init()
-
 			vim.opt.signcolumn = "yes"
 
 			local capabilities = vim.tbl_deep_extend(
@@ -153,7 +82,12 @@ return {
 			)
 
 			local function setup_enhanced_diagnostics()
-				local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+				local signs = {
+					Error = "󰅚 ",
+					Warn = "󰀪 ",
+					Hint = "󰌶 ",
+					Info = "󰋽 "
+				}
 				for type, icon in pairs(signs) do
 					local hl = "DiagnosticSign" .. type
 					vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
@@ -161,7 +95,7 @@ return {
 
 				vim.diagnostic.config({
 					virtual_text = {
-						prefix = "●",
+						prefix = "󰧞",
 						source = true,
 						severity_sort = true,
 					},
@@ -194,12 +128,7 @@ return {
 				vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
 				vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
 				vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show Diagnostic Details" })
-				vim.keymap.set(
-					"n",
-					"<leader>q",
-					vim.diagnostic.setloclist,
-					{ desc = "Add Diagnostics to Location List" }
-				)
+				vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Add Diagnostics to Location List" })
 			end
 
 			local function open_dynamic_lsp_log()
@@ -222,9 +151,7 @@ return {
 					end,
 				})
 			end
-
 			setup_enhanced_diagnostics()
-
 			vim.api.nvim_create_user_command(
 				"DynamicLspLog",
 				open_dynamic_lsp_log,
@@ -236,24 +163,153 @@ return {
 				desc = "LSP actions",
 				callback = function(event)
 					local opts = { buffer = event.buf }
-
-					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-
 					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
 					vim.keymap.set("n", "go", vim.lsp.buf.type_definition, opts)
 					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 					vim.keymap.set("n", "gs", vim.lsp.buf.signature_help, opts)
+					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 					vim.keymap.set({ "n", "x" }, "<F3>", function()
 						vim.lsp.buf.format({ async = true })
 					end, opts)
-
 					local diagnostic_augroup = vim.api.nvim_create_augroup("Diagnostic", { clear = true })
 				end,
 			})
+			local servers = {
+				lua_ls = {
+					settings = {
+						Lua = {
+							diagnostics = {
+								globals = {
+									"vim",
+									"describe", "it", "before_each", "after_each",
+									"awesome", "client", "screen", "mouse",
+									"use"
+								},
+								disable = {
+									"missing-parameter",
+									"missing-fields",
+								}
+							},
+							completion = {
+								callSnippet = "Replace",
+								keywordSnippet = "Replace",
+								displayContext = 6,
+							},
+							format = {
+								enable = true,
+								defaultConfig = {
+									indent_style = "space",
+									indent_size = "2",
+								}
+							},
+							workspace = {
+								library = vim.api.nvim_get_runtime_file("", true),
+								checkThirdParty = false,
+								maxPreload = 2000,
+								preloadFileSize = 1000,
+							},
+							telemetry = { enable = false },
+							hint = {
+								enable = true,
+								setType = true,
+								paramType = true,
+								paramName = "Literal",
+								semicolon = "Disable",
+								arrayIndex = "Disable",
+							},
+						},
+					},
+				},
+
+				cssls = {},
+				html = {},
+				eslint = {},
+				jsonls = {
+					settings = {
+						json = {
+							schemas = require('schemastore').json.schemas(),
+							validate = { enable = true },
+						},
+					},
+				},
+
+				yamlls = {
+					settings = {
+						yaml = {
+							schemaStore = {
+								enable = true,
+								url = "https://www.schemastore.org/api/json/catalog.json",
+							},
+						},
+					},
+				},
+				denols = {},
+				gopls = {
+					settings = {
+						gopls = {
+							analyses = {
+								unusedparams = true,
+							},
+							staticcheck = true,
+						},
+					},
+				},
+				pyright = {
+					settings = {
+						python = {
+							analysis = {
+								typeCheckingMode = "basic",
+								autoSearchPaths = true,
+								useLibraryCodeForTypes = true,
+								diagnosticMode = "workspace",
+							},
+						},
+					},
+				},
+				ruff_lsp = {
+					init_options = {
+						settings = {
+							args = {},
+						}
+					}
+				},
+				rust_analyzer = {
+					settings = {
+						["rust-analyzer"] = {
+							checkOnSave = {
+								command = "clippy",
+							},
+							cargo = {
+								allFeatures = true,
+							},
+							procMacro = {
+								enable = true,
+							},
+						},
+					},
+				},
+				clangd = {
+					cmd = {
+						"clangd",
+						"--background-index",
+						"--suggest-missing-includes",
+						"--clang-tidy",
+						"--header-insertion=iwyu",
+					},
+				},
+				marksman = {},
+				nil_ls = {},
+				taplo = {},
+				nginx_language_server = {},
+			}
+			for server_name, server_config in pairs(servers) do
+				server_config.capabilities = capabilities
+				lspconfig[server_name].setup(server_config)
+			end
 		end,
 	},
 }

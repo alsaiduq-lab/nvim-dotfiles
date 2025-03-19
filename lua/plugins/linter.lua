@@ -7,10 +7,10 @@ return {
         local lint = require("lint")
         local mason_registry = require("mason-registry")
         local all_linters_by_ft = {
-            javascript = { "eslint" },
-            typescript = { "eslint" },
-            javascriptreact = { "eslint" },
-            typescriptreact = { "eslint" },
+            javascript = { "eslint_d" },
+            typescript = { "eslint_d" },
+            javascriptreact = { "eslint_d" },
+            typescriptreact = { "eslint_d" },
             python = { "ruff" },
             lua = { "selene" },
             markdown = { "vale" },
@@ -29,8 +29,8 @@ return {
             java = { "checkstyle" },
             xml = { "xmllint" },
             sql = { "sqlfluff" },
-            vue = { "eslint" },
-            svelte = { "eslint" },
+            vue = { "eslint_d" },
+            svelte = { "eslint_d" },
             terraform = { "tflint" },
             proto = { "buf-lint" },
             cmake = { "cmakelint" },

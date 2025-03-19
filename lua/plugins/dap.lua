@@ -114,6 +114,12 @@ return {
 						debugger_path = vim.fn.stdpath("data") .. "/mason/packages/node-debug2-adapter",
 						adapters = { "node-terminal", "chrome", "pwa-node", "pwa-chrome" },
 					})
+					dap.adapters.chrome = {
+						type = "executable",
+						command = "node",
+						args = {vim.fn.stdpath("data") .. "/mason/packages/chrome-debug-adapter/out/src/chromeDebug.js"}
+					}
+					dap.adapters["pwa-chrome"] = dap.adapters.chrome
 
 					dap.configurations.javascript = {
 						{
@@ -127,10 +133,15 @@ return {
 						{
 							type = "pwa-chrome",
 							request = "launch",
-							name = "Launch Chrome against localhost",
+							name = "Launch Brave against localhost",
 							url = "http://localhost:3000",
 							webRoot = "${workspaceFolder}",
-							userDataDir = "${workspaceFolder}/.vscode/chrome-debug-profile",
+							runtimeExecutable = "/usr/bin/brave-browser",
+							runtimeArgs = {
+								"--remote-debugging-port=9222"
+							},
+							userDataDir = "${workspaceFolder}/.vscode/brave-debug-profile",
+							sourceMaps = true,
 						},
 						{
 							type = "pwa-node",
@@ -157,17 +168,22 @@ return {
 						{
 							type = "pwa-chrome",
 							request = "launch",
-							name = "Launch Chrome against localhost",
+							name = "Launch Brave against localhost",
 							url = "http://localhost:3000",
 							webRoot = "${workspaceFolder}",
-							userDataDir = "${workspaceFolder}/.vscode/chrome-debug-profile",
+							runtimeExecutable = "/usr/bin/brave-browser",
+							runtimeArgs = {
+								"--remote-debugging-port=9222"
+							},
+							userDataDir = "${workspaceFolder}/.vscode/brave-debug-profile",
+							sourceMaps = true,
 						},
 					}
 
 					dap.configurations.javascriptreact = dap.configurations.javascript
 					dap.configurations.typescriptreact = dap.configurations.typescript
 
-					notify_dap("JavaScript/TypeScript debugger configured", "info")
+					notify_dap("JavaScript/TypeScript debugger with Brave configured", "info")
 				end,
 			})
 

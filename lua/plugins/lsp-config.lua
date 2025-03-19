@@ -15,6 +15,29 @@ return {
 					check_outdated_packages_on_open = false
 				}
 			})
+			vim.api.nvim_create_user_command("InstallChromeDebugAdapter", function()
+				vim.notify("Installing Chrome Debug Adapter manually...", vim.log.levels.INFO)
+				vim.fn.system([[
+					cd ~/.local/share/nvim/mason/packages
+					rm -rf chrome-debug-adapter
+					git clone https://github.com/Microsoft/vscode-chrome-debug.git chrome-debug-adapter
+					cd chrome-debug-adapter
+					npm install --ignore-scripts
+				]])
+				vim.notify("Chrome Debug Adapter installed manually. Check for any errors.", vim.log.levels.INFO)
+				local registry = require("mason-registry")
+				if registry.is_installed("chrome-debug-adapter") then
+					registry.get_package("chrome-debug-adapter"):get_receipt()._is_valid = true
+				end
+			end, { desc = "Manually install Chrome Debug Adapter" })
+			vim.api.nvim_create_user_command("FixChromeDebugAdapter", function()
+				vim.notify("Fixing Chrome Debug Adapter installation...", vim.log.levels.INFO)
+				vim.fn.system([[
+					cd ~/.local/share/nvim/mason/packages/chrome-debug-adapter
+					npm install --ignore-scripts
+				]])
+				vim.notify("Chrome Debug Adapter fixed. Check for any errors.", vim.log.levels.INFO)
+			end, { desc = "Fix Chrome Debug Adapter installation" })
 		end,
 	},
 	{
@@ -34,6 +57,7 @@ return {
 
 			require("mason-tool-installer").setup({
 				ensure_installed = {
+					-- Formatters
 					"alejandra",
 					"black",
 					"prettier",
@@ -44,6 +68,7 @@ return {
 					"sql-formatter",
 					"yamlfmt",
 
+					-- Linters
 					"eslint_d",
 					"luacheck",
 					"flake8",
@@ -62,11 +87,16 @@ return {
 					"checkstyle",
 					"tflint",
 					"sqlfluff",
+                    "clippy",
 
+                    -- DAPs
                     "debugpy",
 					"codelldb",
 					"node-debug2-adapter",
+					-- "chrome-debug-adapter",  -- NOTE: This has to be installed manually due to postinstall issues
 					"delve",
+					"php-debug-adapter",
+					"bash-debug-adapter",
 				},
 				auto_update = false,
 				run_on_start = false,
@@ -88,6 +118,12 @@ return {
 						title = "Mason",
 						timeout = 3000,
 					})
+					vim.defer_fn(function()
+						vim.notify([[
+Chrome Debug Adapter must be installed manually:
+Run :InstallChromeDebugAdapter to install it.
+]], vim.log.levels.WARN)
+					end, 5000)
 				end, 5000)
 			end
 
@@ -97,6 +133,12 @@ return {
 					title = "Mason",
 					timeout = 2000,
 				})
+				vim.defer_fn(function()
+					vim.notify([[
+Chrome Debug Adapter must be installed manually:
+Run :InstallChromeDebugAdapter to install it.
+]], vim.log.levels.WARN)
+				end, 2000)
 			end, { desc = "Force Mason tools installation" })
 		end,
 	},
@@ -110,7 +152,7 @@ return {
 					"clangd",
 					"cssls",
 					"denols",
-					"eslint",
+					"eslint_d",
 					"gopls",
 					"html",
 					"jsonls",
@@ -134,13 +176,7 @@ return {
 		},
 		config = function()
 			require("mason-nvim-dap").setup({
-				ensure_installed = {
-					"python",
-					"delve",
-					"codelldb",
-					"node2",
-				},
-				automatic_installation = true,
+				automatic_installation = false,
 				handlers = {
 					function(config)
 						require("mason-nvim-dap").default_setup(config)
@@ -319,7 +355,7 @@ return {
 
 				cssls = {},
 				html = {},
-				eslint = {},
+				eslint_d = {},
 				jsonls = {
 					settings = {
 						json = {

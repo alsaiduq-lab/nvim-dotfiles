@@ -398,7 +398,7 @@ Run :InstallChromeDebugAdapter to install it.
 						},
 					},
 				},
-				ruff_lsp = {
+				ruff = {
 					init_options = {
 						settings = {
 							args = {},

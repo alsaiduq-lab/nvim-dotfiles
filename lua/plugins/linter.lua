@@ -74,6 +74,14 @@ return {
                 lint.linters_by_ft[ft] = available
             end
         end
+        if lint.linters.ruff and is_linter_available("ruff") then
+            lint.linters.ruff.args = {
+                "--select=ALL",
+                "--ignore=ANN101,E501",
+                "--no-fix",
+                "-"
+            }
+        end
         if lint.linters.luacheck and is_linter_available("luacheck") then
             lint.linters.luacheck.args = {
                 "--globals", "vim",

@@ -34,6 +34,8 @@ return {
                     end,
                 },
                 python = {
+                    -- Use ruff as the primary formatter for Python
+                    -- It's faster and more comprehensive than black
                     function()
                         return {
                             exe = "ruff",
@@ -46,13 +48,7 @@ return {
                             stdin = true,
                         }
                     end,
-                    function()
-                        return {
-                            exe = "black",
-                            args = { "--quiet", "--line-length", "120", "-" },
-                            stdin = true,
-                        }
-                    end,
+                    -- Removed black as a secondary formatter to avoid conflicts
                 },
                 javascript = {
                     function()

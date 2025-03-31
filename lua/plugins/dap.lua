@@ -28,7 +28,7 @@ return {
 					"codelldb",
 					"node2",
 					"php",
-					"chrome",
+					"js",
 					"bash",
 					"cppdbg",
 				},
@@ -111,15 +111,9 @@ return {
 				pattern = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
 				callback = function()
 					require("dap-vscode-js").setup({
-						debugger_path = vim.fn.stdpath("data") .. "/mason/packages/node-debug2-adapter",
-						adapters = { "node-terminal", "chrome", "pwa-node", "pwa-chrome" },
+						debugger_path = vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter",
+						adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" },
 					})
-					dap.adapters.chrome = {
-						type = "executable",
-						command = "node",
-						args = {vim.fn.stdpath("data") .. "/mason/packages/chrome-debug-adapter/out/src/chromeDebug.js"}
-					}
-					dap.adapters["pwa-chrome"] = dap.adapters.chrome
 
 					dap.configurations.javascript = {
 						{
@@ -138,7 +132,7 @@ return {
 							webRoot = "${workspaceFolder}",
 							runtimeExecutable = "/usr/bin/brave-browser",
 							runtimeArgs = {
-								"--remote-debugging-port=9222"
+								"--remote-debugging-port=9222",
 							},
 							userDataDir = "${workspaceFolder}/.vscode/brave-debug-profile",
 							sourceMaps = true,
@@ -173,7 +167,7 @@ return {
 							webRoot = "${workspaceFolder}",
 							runtimeExecutable = "/usr/bin/brave-browser",
 							runtimeArgs = {
-								"--remote-debugging-port=9222"
+								"--remote-debugging-port=9222",
 							},
 							userDataDir = "${workspaceFolder}/.vscode/brave-debug-profile",
 							sourceMaps = true,
@@ -234,7 +228,7 @@ return {
 								end
 								local choice = vim.fn.inputlist({
 									"Select process to attach to:",
-									unpack(options)
+									unpack(options),
 								})
 								if choice < 1 or choice > #options then
 									return nil
@@ -257,7 +251,9 @@ return {
 					dap.adapters.php = {
 						type = "executable",
 						command = "node",
-						args = { vim.fn.stdpath("data") .. "/mason/packages/php-debug-adapter/extension/out/phpDebug.js" },
+						args = {
+							vim.fn.stdpath("data") .. "/mason/packages/php-debug-adapter/extension/out/phpDebug.js",
+						},
 					}
 
 					dap.configurations.php = {
@@ -306,8 +302,10 @@ return {
 							request = "launch",
 							name = "Launch Bash script",
 							showDebugOutput = true,
-							pathBashdb = vim.fn.stdpath("data") .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir/bashdb",
-							pathBashdbLib = vim.fn.stdpath("data") .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir",
+							pathBashdb = vim.fn.stdpath("data")
+								.. "/mason/packages/bash-debug-adapter/extension/bashdb_dir/bashdb",
+							pathBashdbLib = vim.fn.stdpath("data")
+								.. "/mason/packages/bash-debug-adapter/extension/bashdb_dir",
 							trace = true,
 							file = "${file}",
 							program = "${file}",
@@ -319,7 +317,7 @@ return {
 							args = {},
 							env = {},
 							terminalKind = "integrated",
-						}
+						},
 					}
 					notify_dap("Shell script debugger configured", "info")
 				end,
@@ -366,7 +364,7 @@ return {
 				windows = { indent = 1 },
 				render = {
 					max_type_length = nil,
-					max_value_lines = 100
+					max_value_lines = 100,
 				},
 			})
 

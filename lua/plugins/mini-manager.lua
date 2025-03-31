@@ -217,7 +217,6 @@ return {
 				pad_comment_parts = true,
 			},
 		})
-
 		require("mini.cursorword").setup({
 			delay = 100,
 		})

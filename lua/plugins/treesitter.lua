@@ -33,6 +33,7 @@ return {
         "vimdoc",
         "c",
         "rust",
+        "regex",
       },
     })
   end,

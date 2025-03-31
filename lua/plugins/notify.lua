@@ -1,6 +1,7 @@
 return {
 	"rcarriga/nvim-notify",
-	event = "VeryLazy",
+	lazy = false,
+	priority = 1000,
 	config = function()
 		local notify = require("notify")
 		notify.setup({
@@ -14,9 +15,7 @@ return {
 				vim.api.nvim_win_set_config(win, { border = "rounded" })
 			end,
 		})
-
 		vim.notify = notify
-
 		vim.cmd([[
       highlight NotifyERRORBorder guifg=#db4b4b guibg=NONE
       highlight NotifyWARNBorder guifg=#e0af68 guibg=NONE
@@ -38,4 +37,6 @@ return {
       highlight NotifyINFOBody guibg=NONE guifg=#c0caf5
       highlight NotifyDEBUGBody guibg=NONE guifg=#c0caf5
       highlight NotifyTRACEBody guibg=NONE guifg=#c0caf5
-]])end}
+]])
+	end
+}

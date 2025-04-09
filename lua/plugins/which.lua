@@ -10,10 +10,7 @@ return {
             plugins = {
                 marks = true,
                 registers = true,
-                spelling = {
-                    enabled = true,
-                    suggestions = 20,
-                },
+                spelling = { enabled = true, suggestions = 20 },
                 presets = {
                     operators = true,
                     motions = true,
@@ -24,15 +21,7 @@ return {
                     g = true,
                 },
             },
-            icons = {
-                breadcrumb = "»",
-                separator = "➜",
-                group = "+",
-            },
-            defaults = {
-                mode = { "n", "v" },
-                ["<leader>"] = { name = "+prefix" },
-            },
+            icons = { breadcrumb = "»", separator = "➜", group = "+" },
             popup = {
                 border = "rounded",
                 position = "bottom",
@@ -40,12 +29,7 @@ return {
                 padding = { 2, 2, 2, 2 },
                 winblend = 0,
             },
-            layout = {
-                height = { min = 4, max = 25 },
-                width = { min = 20, max = 50 },
-                spacing = 3,
-                align = "left",
-            },
+            layout = { height = { min = 4, max = 25 }, width = { min = 20, max = 50 }, spacing = 3, align = "left" },
             show_help = true,
             show_keys = true,
             triggers = { "<leader>" },
@@ -54,12 +38,6 @@ return {
         config = function(_, opts)
             local wk = require("which-key")
             wk.setup(opts)
-            wk.register({
-                ["<leader>f"] = { name = "File" },
-                ["<leader>f_"] = { name = "which_key_ignore" },
-                ["<leader>fr"] = { "<cmd>Telescope oldfiles<cr>", "Recent Files" },
-                ["<leader>fs"] = { "<cmd>Telescope live_grep<cr>", "Live Grep" },
-            })
         end,
     },
 }

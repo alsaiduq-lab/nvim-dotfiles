@@ -2,8 +2,6 @@ return {
     "mfussenegger/nvim-lint",
     event = { "BufReadPost" },
     config = function()
-        vim.api.nvim_command("set verbosefile=/tmp/nvim-lint.log")
-        vim.api.nvim_command("set verbose=1")
         local lint = require("lint")
         local mason_registry = require("mason-registry")
         local all_linters_by_ft = {
@@ -47,6 +45,7 @@ return {
             powershell = { "psscriptanalyzer" },
             graphql = { "graphql-lint" },
         }
+
         local function is_linter_available(linter)
             if not lint.linters[linter] then
                 return false
@@ -62,6 +61,7 @@ return {
             end
             return false
         end
+
         lint.linters_by_ft = {}
         for ft, linters in pairs(all_linters_by_ft) do
             local available = {}
@@ -74,33 +74,20 @@ return {
                 lint.linters_by_ft[ft] = available
             end
         end
+
         if lint.linters.ruff and is_linter_available("ruff") then
-            lint.linters.ruff.args = {
-                "--select=ALL",
-                "--ignore=ANN101,E501",
-                "--no-fix",
-                "-"
-            }
+            lint.linters.ruff.args = { "--select=ALL", "--ignore=ANN101,E501", "--no-fix", "-" }
         end
         if lint.linters.luacheck and is_linter_available("luacheck") then
-            lint.linters.luacheck.args = {
-                "--globals", "vim",
-                "--no-max-line-length",
-                "--no-unused-args",
-                "-"
-            }
+            lint.linters.luacheck.args = { "--globals", "vim", "--no-max-line-length", "--no-unused-args", "-" }
         end
+
         local M = {
-            timer = nil,
+            timers = {},
             disabled_linters = {},
-            warned_filetypes = {},
-            show_warnings = false,
             debounce_ms = 1000,
-            first_run_completed = false,
         }
-        _G.enable_lint_warnings = function()
-            M.show_warnings = true
-        end
+
         local function get_available_linters(ft)
             local linters = lint.linters_by_ft[ft] or {}
             local available_linters = {}
@@ -124,6 +111,7 @@ return {
             end
             return available_linters
         end
+
         local function should_lint(bufnr)
             if not vim.api.nvim_buf_is_valid(bufnr) then
                 return false
@@ -149,55 +137,86 @@ return {
             end
             return true
         end
+
         local function try_lint()
-            if M.timer then
-                M.timer:stop()
-                M.timer = nil
+            local bufnr = vim.api.nvim_get_current_buf()
+            if M.timers[bufnr] then
+                M.timers[bufnr]:stop()
+                M.timers[bufnr]:close()
+                M.timers[bufnr] = nil
             end
-            M.timer = vim.defer_fn(function()
-                local bufnr = vim.api.nvim_get_current_buf()
-                if not should_lint(bufnr) then
-                    return
-                end
-                local ft = vim.bo[bufnr].filetype
-                local configured_linters = lint.linters_by_ft[ft] or {}
-                local active_linters = vim.tbl_filter(function(linter)
-                    return not M.disabled_linters[linter]
-                end, configured_linters)
-                if #active_linters == 0 then
-                    return
-                end
-                local available_linters = get_available_linters(ft)
-                local available_active_linters = vim.tbl_filter(function(linter)
-                    return vim.tbl_contains(active_linters, linter)
-                end, available_linters)
-                if #available_active_linters == 0 then
-                    return
-                end
-                local success, err = pcall(lint.try_lint, available_active_linters)
-                if not success then
-                end
-                M.first_run_completed = true
-            end, M.debounce_ms)
+            local timer = vim.loop.new_timer()
+            M.timers[bufnr] = timer
+            timer:start(
+                M.debounce_ms,
+                0,
+                vim.schedule_wrap(function()
+                    if not should_lint(bufnr) then
+                        return
+                    end
+                    local ft = vim.bo[bufnr].filetype
+                    local configured_linters = lint.linters_by_ft[ft] or {}
+                    local active_linters = vim.tbl_filter(function(linter)
+                        return not M.disabled_linters[linter]
+                    end, configured_linters)
+                    if #active_linters == 0 then
+                        return
+                    end
+                    local available_linters = get_available_linters(ft)
+                    local available_active_linters = vim.tbl_filter(function(linter)
+                        return vim.tbl_contains(active_linters, linter)
+                    end, available_linters)
+                    if #available_active_linters == 0 then
+                        return
+                    end
+                    local success, err = pcall(lint.try_lint, available_active_linters)
+                    if not success then
+                        vim.notify("Linting error: " .. tostring(err), vim.log.levels.ERROR)
+                    end
+                    if M.timers[bufnr] then
+                        M.timers[bufnr]:stop()
+                        M.timers[bufnr]:close()
+                        M.timers[bufnr] = nil
+                    end
+                end)
+            )
         end
+
         local function toggle_linter(linter_name)
             M.disabled_linters[linter_name] = not M.disabled_linters[linter_name]
             if not M.disabled_linters[linter_name] then
                 try_lint()
             end
         end
+
         local function show_linter_status()
+            local ft = vim.bo.filetype
+            local configured_linters = all_linters_by_ft[ft] or {}
+            if #configured_linters == 0 then
+                vim.notify("No linters configured for filetype: " .. ft, vim.log.levels.INFO)
+                return
+            end
+            local lines = {}
+            table.insert(lines, "Linter status for filetype: **" .. ft .. "**")
+            for _, linter in ipairs(configured_linters) do
+                local enabled = (M.disabled_linters[linter] and "Disabled" or "Enabled")
+                local available = is_linter_available(linter) and "Available" or "Unavailable"
+                local status_icon = (enabled == "Enabled" and "" or "")
+                local avail_icon = (available == "Available" and "󰄬" or "")
+                table.insert(
+                    lines,
+                    string.format(" %s %s: %s [%s %s]", status_icon, linter, enabled, avail_icon, available)
+                )
+            end
+            vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Linter Status" })
         end
+
         vim.api.nvim_create_autocmd({ "BufReadPost" }, {
             callback = function()
                 local bufnr = vim.api.nvim_get_current_buf()
                 local bufname = vim.api.nvim_buf_get_name(bufnr)
                 if vim.api.nvim_buf_is_valid(bufnr) and bufname ~= "" then
-                    vim.defer_fn(function()
-                        if vim.api.nvim_buf_is_valid(bufnr) then
-                            try_lint()
-                        end
-                    end, M.debounce_ms)
+                    try_lint()
                 end
             end,
         })
@@ -241,5 +260,17 @@ return {
             local hl = "DiagnosticSign" .. type
             vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
         end
+
+        vim.api.nvim_create_autocmd("VimLeavePre", {
+            callback = function()
+                for bufnr, timer in pairs(M.timers) do
+                    if timer then
+                        timer:stop()
+                        timer:close()
+                        M.timers[bufnr] = nil
+                    end
+                end
+            end,
+        })
     end,
 }

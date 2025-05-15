@@ -42,7 +42,7 @@ return {
                 pickers = {
                     find_files = {
                         hidden = true,
-                        find_command = { "fd", "--type", "f", "--strip-cwd-prefix" }
+                        find_command = { "fd", "--type", "f", "--strip-cwd-prefix" },
                     },
                 },
             })
@@ -51,8 +51,6 @@ return {
             vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
             vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find buffers" })
             vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
-            vim.keymap.set("n", "gr", builtin.lsp_references, { desc = "LSP references" })
-            vim.keymap.set("n", "gi", builtin.lsp_implementations, { desc = "LSP implementations" })
         end,
     },
     {

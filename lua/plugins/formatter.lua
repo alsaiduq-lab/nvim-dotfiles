@@ -1,7 +1,5 @@
 return {
     "mhartington/formatter.nvim",
-    event = "BufWritePre",
-    opts = {},
     config = function()
         local function notify(msg, level)
             local has_notify, nvim_notify = pcall(require, "notify")
@@ -24,9 +22,12 @@ return {
                             exe = "stylua",
                             args = {
                                 "--search-parent-directories",
-                                "--column-width", "120",
-                                "--indent-type", "Spaces",
-                                "--indent-width", "4",
+                                "--column-width",
+                                "120",
+                                "--indent-type",
+                                "Spaces",
+                                "--indent-width",
+                                "4",
                                 "-",
                             },
                             stdin = true,
@@ -39,7 +40,8 @@ return {
                             exe = "ruff",
                             args = {
                                 "format",
-                                "--line-length", "120",
+                                "--line-length",
+                                "120",
                                 "--respect-gitignore",
                                 "-",
                             },
@@ -52,9 +54,11 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
                                 "--single-quote",
-                                "--tab-width", "2",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -65,10 +69,13 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
                                 "--single-quote",
-                                "--tab-width", "2",
-                                "--parser", "typescript",
+                                "--tab-width",
+                                "2",
+                                "--parser",
+                                "typescript",
                             },
                             stdin = true,
                         }
@@ -79,10 +86,13 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
                                 "--single-quote",
-                                "--tab-width", "2",
-                                "--parser", "jsx",
+                                "--tab-width",
+                                "2",
+                                "--parser",
+                                "jsx",
                             },
                             stdin = true,
                         }
@@ -93,10 +103,13 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
                                 "--single-quote",
-                                "--tab-width", "2",
-                                "--parser", "tsx",
+                                "--tab-width",
+                                "2",
+                                "--parser",
+                                "tsx",
                             },
                             stdin = true,
                         }
@@ -107,9 +120,12 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
-                                "--parser", "json",
-                                "--tab-width", "2",
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser",
+                                "json",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -120,9 +136,12 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
-                                "--parser", "html",
-                                "--tab-width", "2",
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser",
+                                "html",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -133,9 +152,12 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
-                                "--parser", "css",
-                                "--tab-width", "2",
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser",
+                                "css",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -146,9 +168,12 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
-                                "--parser", "scss",
-                                "--tab-width", "2",
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser",
+                                "scss",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -159,10 +184,14 @@ return {
                         return {
                             exe = "prettier",
                             args = {
-                                "--stdin-filepath", vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
-                                "--parser", "markdown",
-                                "--prose-wrap", "always",
-                                "--tab-width", "2",
+                                "--stdin-filepath",
+                                vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)),
+                                "--parser",
+                                "markdown",
+                                "--prose-wrap",
+                                "always",
+                                "--tab-width",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -186,8 +215,10 @@ return {
                         return {
                             exe = "rustfmt",
                             args = {
-                                "--edition", "2021",
-                                "--config", "tab_spaces=4",
+                                "--edition",
+                                "2021",
+                                "--config",
+                                "tab_spaces=4",
                             },
                             stdin = true,
                         }
@@ -254,8 +285,10 @@ return {
                         return {
                             exe = "sql-formatter",
                             args = {
-                                "--language", "sql",
-                                "--indent", "2",
+                                "--language",
+                                "sql",
+                                "--indent",
+                                "2",
                             },
                             stdin = true,
                         }
@@ -281,9 +314,25 @@ return {
             end
 
             local format_on_save_filetypes = {
-                "lua", "python", "javascript", "typescript", "javascriptreact", "typescriptreact",
-                "json", "html", "css", "scss", "yaml", "rust", "go", "nix", "c", "cpp",
-                "markdown", "sh", "sql",
+                "lua",
+                "python",
+                "javascript",
+                "typescript",
+                "javascriptreact",
+                "typescriptreact",
+                "json",
+                "html",
+                "css",
+                "scss",
+                "yaml",
+                "rust",
+                "go",
+                "nix",
+                "c",
+                "cpp",
+                "markdown",
+                "sh",
+                "sql",
             }
 
             if not vim.tbl_contains(format_on_save_filetypes, ft) then
@@ -307,8 +356,8 @@ return {
 
         _G.format_buffer = format_buffer
 
-        vim.keymap.set("n", "<leader>lf", function()
-            format_buffer()
+        vim.keymap.set("n", "<leader>F", function()
+            _G.format_buffer()
         end, {
             noremap = true,
             silent = true,
@@ -318,7 +367,7 @@ return {
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true }),
             callback = function()
-                format_buffer()
+                _G.format_buffer()
             end,
             desc = "Auto-format on save",
         })

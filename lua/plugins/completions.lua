@@ -45,7 +45,10 @@ return {
             end
 
             vim.api.nvim_create_user_command("CmpToggleAutocomplete", toggle_cmp_autocomplete, {})
-            vim.keymap.set("n", "<leader>A", toggle_cmp_autocomplete, { desc = "Toggle autocompletions" })
+
+            vim.schedule(function()
+                vim.keymap.set("n", "<leader>A", toggle_cmp_autocomplete, { desc = "Toggle autocompletions" })
+            end)
 
             vim.api.nvim_create_autocmd("BufEnter", {
                 callback = function()
@@ -53,29 +56,26 @@ return {
                 end,
             })
 
-            local function toggle_cmp_documentation()
-                vim.g.cmp_documentation_enabled = not vim.g.cmp_documentation_enabled
-
-                cmp.setup({
-                    window = {
-                        completion = cmp.config.window.bordered(border_opts),
-                        documentation = vim.g.cmp_documentation_enabled and cmp.config.window.bordered(border_opts)
-                            or cmp.config.disable,
-                    },
-                })
-
-                cmp.close()
-                vim.notify(
-                    "Documentation is now "
-                        .. (vim.g.cmp_documentation_enabled and "enabled" or "disabled")
-                        .. ". Change takes effect on the next completion popup.",
-                    vim.log.levels.INFO
-                )
-            end
-
-            vim.keymap.set("n", "<leader>ad", toggle_cmp_documentation, { desc = "Toggle documentation" })
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = "TelescopePrompt",
+                callback = function()
+                    require("cmp").setup.buffer({ enabled = false })
+                end,
+            })
 
             cmp.setup({
+                enabled = function()
+                    local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
+                    if buftype == "prompt" then
+                        return false
+                    end
+                    local context = require("cmp.config.context")
+                    if context.in_treesitter_capture("comment") == true or context.in_syntax_group("Comment") then
+                        return false
+                    end
+                    return true
+                end,
+
                 snippet = {
                     expand = function(args)
                         luasnip.lsp_expand(args.body)

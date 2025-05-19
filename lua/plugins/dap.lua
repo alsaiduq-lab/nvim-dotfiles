@@ -20,6 +20,10 @@ return {
         local dapui = require("dapui")
         local notify = require("notify")
 
+        local python = require("python")
+        local python_path = vim.g.python3_host_prog or (python.find_python and python.find_python()) or "python3"
+        require("dap-python").setup(python_path)
+
         require("mason-nvim-dap").setup({
             ensure_installed = {
                 "python",
@@ -35,7 +39,6 @@ return {
             automatic_installation = true,
         })
 
-        require("dap-python").setup()
         require("dap-go").setup()
 
         dap.adapters.nlua = function(callback, _)

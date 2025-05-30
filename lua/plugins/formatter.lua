@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: undefined-global
+local vim = vim
+
 return {
     "mhartington/formatter.nvim",
     config = function()
@@ -354,10 +357,8 @@ return {
             end
         end
 
-        _G.format_buffer = format_buffer
-
         vim.keymap.set("n", "<leader>F", function()
-            _G.format_buffer()
+            format_buffer()
         end, {
             noremap = true,
             silent = true,
@@ -367,7 +368,7 @@ return {
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true }),
             callback = function()
-                _G.format_buffer()
+                format_buffer()
             end,
             desc = "Auto-format on save",
         })

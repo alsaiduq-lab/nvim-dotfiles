@@ -300,6 +300,5 @@ return {
             vim.api.nvim_create_user_command("ThemeSelect", theme_switcher, {})
         end,
         vim.keymap.set("n", "<leader>T", ":ThemeSelect<CR>", { noremap = true, silent = true }),
-
     },
 }

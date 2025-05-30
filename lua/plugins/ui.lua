@@ -142,8 +142,6 @@ return {
                 vim.keymap.set("n", "Go", ":TSToolsAddMissingImports<CR>", opts)
                 vim.keymap.set("n", "Gd", vim.lsp.buf.definition, opts)
                 vim.keymap.set("n", "Gk", vim.lsp.buf.hover, opts)
-                vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-                vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
             end,
             settings = {
                 tsserver_file_preferences = {

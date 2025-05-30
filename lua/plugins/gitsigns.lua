@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: undefined-global
+local vim = vim
+
 return {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" },

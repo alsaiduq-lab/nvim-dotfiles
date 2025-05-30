@@ -36,7 +36,7 @@ return {
                 },
                 filtered_items = {
                     visible = false,
-                    hide_dotfiles = true,
+                    hide_dotfiles = false,
                     hide_gitignored = true,
                     hide_by_name = {
                         "node_modules",
@@ -54,11 +54,9 @@ return {
                     mappings = {
                         ["<leader>f"] = "filter_on_submit",
                         ["<leader>F"] = "clear_filter",
-                        ["<space>"] = "toggle_node",
+                        ["<tab>"] = "toggle_node",
                         ["<2-LeftMouse>"] = "open",
                         ["<cr>"] = "open",
-                        ["S"] = "open_split",
-                        ["s"] = "open_vsplit",
                         ["t"] = "open_tabnew",
                         ["C"] = "close_node",
                         ["z"] = "close_all_nodes",
@@ -66,9 +64,6 @@ return {
                         ["a"] = "add",
                         ["d"] = "delete",
                         ["r"] = "rename",
-                        ["y"] = "copy_to_clipboard",
-                        ["x"] = "cut_to_clipboard",
-                        ["p"] = "paste_from_clipboard",
                         ["c"] = "copy",
                         ["m"] = "move",
                         ["q"] = "close_window",
@@ -78,7 +73,7 @@ return {
             },
             window = {
                 position = "left",
-                width = 35,
+                width = 25,
                 mapping_options = {
                     noremap = true,
                     nowait = true,
@@ -121,7 +116,7 @@ return {
                 },
             },
         })
-        vim.keymap.set("n", "<C-n>", ":Neotree filesystem reveal left<CR>", { silent = true })
+        vim.keymap.set("n", "<C-n>", ":Neotree filesystem toggle left<CR>", { silent = true })
         vim.keymap.set("n", "<leader>bf", ":Neotree buffers reveal float<CR>", { silent = true })
         vim.keymap.set("n", "<leader>gs", ":Neotree git_status reveal float<CR>", { silent = true })
     end,

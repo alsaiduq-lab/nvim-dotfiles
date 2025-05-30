@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: undefined-global
+local vim = vim
+
 local function safe_set(option, value)
     local success, err = pcall(function()
         vim.o[option] = value
@@ -49,16 +52,6 @@ safe_set("pumheight", 10)
 
 -- Keymaps
 local keymap = vim.keymap.set
-keymap("n", "<C-h>", "<C-w>h", { desc = "Navigate to left window" })
-keymap("n", "<C-j>", "<C-w>j", { desc = "Navigate to bottom window" })
-keymap("n", "<C-k>", "<C-w>k", { desc = "Navigate to top window" })
-keymap("n", "<C-l>", "<C-w>l", { desc = "Navigate to right window" })
 keymap("n", "<Tab>", ":bnext<CR>", { silent = true, desc = "Next buffer" })
 keymap("n", "<S-Tab>", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
-keymap("n", "<leader>sv", ":vsplit<CR>", { silent = true, desc = "Split vertically" })
-keymap("n", "<leader>sh", ":split<CR>", { silent = true, desc = "Split horizontally" })
 keymap("n", "<leader>sq", ":close<CR>", { silent = true, desc = "Close window" })
-keymap("n", "<C-Up>", ":resize +2<CR>", { silent = true, desc = "Increase window height" })
-keymap("n", "<C-Down>", ":resize -2<CR>", { silent = true, desc = "Decrease window height" })
-keymap("n", "<C-Left>", ":vertical resize -2<CR>", { silent = true, desc = "Decrease window width" })
-keymap("n", "<C-Right>", ":vertical resize +2<CR>", { silent = true, desc = "Increase window width" })

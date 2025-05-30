@@ -1,22 +1,22 @@
 return {
-	"rcarriga/nvim-notify",
-	lazy = false,
-	priority = 1000,
-	config = function()
-		local notify = require("notify")
-		notify.setup({
-			background_colour = "#1a1b26",
-			timeout = 3000,
-			max_width = 60,
-			render = "wrapped-default",
-			stages = "fade",
-			on_open = function(win)
-				vim.api.nvim_win_set_option(win, "wrap", true)
-				vim.api.nvim_win_set_config(win, { border = "rounded" })
-			end,
-		})
-		vim.notify = notify
-		vim.cmd([[
+    "rcarriga/nvim-notify",
+    lazy = false,
+    priority = 1000,
+    config = function()
+        local notify = require("notify")
+        notify.setup({
+            background_colour = "#1a1b26",
+            timeout = 3000,
+            max_width = 60,
+            render = "wrapped-default",
+            stages = "fade",
+            on_open = function(win)
+                vim.api.nvim_win_set_option(win, "wrap", true)
+                vim.api.nvim_win_set_config(win, { border = "rounded" })
+            end,
+        })
+        vim.notify = notify
+        vim.cmd([[
       highlight NotifyERRORBorder guifg=#db4b4b guibg=NONE
       highlight NotifyWARNBorder guifg=#e0af68 guibg=NONE
       highlight NotifyINFOBorder guifg=#0db9d7 guibg=NONE
@@ -38,5 +38,5 @@ return {
       highlight NotifyDEBUGBody guibg=NONE guifg=#c0caf5
       highlight NotifyTRACEBody guibg=NONE guifg=#c0caf5
 ]])
-	end
+    end,
 }

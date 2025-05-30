@@ -2,7 +2,6 @@
 -- Here's an example of how lazy loading might be configured:
 
 -- **Using Lazy.nvim**:
--- ```lua
 -- require("lazy").setup({
 --     {
 --         "username/plugin-name",
@@ -18,7 +17,6 @@
 --         config = function() vim.defer_fn(function() require("plugin-name").setup() end, 100) end
 --     }
 -- })
--- ```
 
 -- Note: Replace 'username/plugin-name' with the actual plugin name or GitHub repo.
 -- The `ft`, `cmd`, `event`, `keys`, and `config` options are just examples;

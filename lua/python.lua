@@ -1,4 +1,4 @@
-local M = {}
+local P = {}
 
 local function find_python()
     local candidates = {
@@ -24,7 +24,7 @@ local function find_python()
     return nil
 end
 
-function M.setup()
+function P.setup()
     local python3 = find_python()
     if python3 then
         vim.g.python3_host_prog = python3
@@ -33,4 +33,4 @@ function M.setup()
     end
 end
 
-return M
+return P

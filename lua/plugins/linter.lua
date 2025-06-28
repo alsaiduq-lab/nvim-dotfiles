@@ -4,6 +4,7 @@ return {
     config = function()
         local lint = require("lint")
         local mason_registry = require("mason-registry")
+
         local all_linters_by_ft = {
             javascript = { "eslint_d" },
             typescript = { "eslint_d" },
@@ -45,6 +46,15 @@ return {
             powershell = { "psscriptanalyzer" },
             graphql = { "graphql-lint" },
         }
+
+        lint.linters.ty = {
+            cmd = "uvx",
+            args = { "ty", "check", "--output-format", "text", "$FILENAME" },
+            stdin = false,
+            stream = "stdout",
+            ignore_exitcode = true,
+        }
+        all_linters_by_ft.python[#all_linters_by_ft.python + 1] = "ty"
 
         local function is_linter_available(linter)
             if not lint.linters[linter] then

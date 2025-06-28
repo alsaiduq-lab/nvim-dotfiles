@@ -49,12 +49,12 @@ return {
                         prompt_position = "bottom",
                         vertical = {
                             mirror = false,
-                            preview_height = 0.5,
+                            preview_height = 0.8,
                             preview_cutoff = 10,
                         },
                         horizontal = {
                             mirror = false,
-                            preview_width = 0.5,
+                            preview_width = 0.8,
                             preview_cutoff = 10,
                         },
                         flex = {

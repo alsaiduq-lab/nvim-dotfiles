@@ -13,6 +13,12 @@ return {
                     view = "cmdline_popup",
                     format = {
                         cmdline = { icon = " " },
+                        python = {
+                            pattern = [[^:%s*python%s+]],
+                            icon = " ",
+                            lang = "python",
+                            conceal = true,
+                        },
                         search_down = { icon = " " },
                         search_up = { icon = " " },
                         filter = { icon = " " },

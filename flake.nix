@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -13,56 +13,56 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
 
-      pythonEnv = pkgs.python311.withPackages (ps:
-        with ps; [
-          debugpy
-          ruff
-          requests
-          pynvim
-        ]);
+      mkDevShellFor = python: let
+        pythonEnv = python.withPackages (ps:
+          with ps; [
+            debugpy
+            ruff
+            requests
+            pynvim
+          ]);
+      in
+        pkgs.mkShell {
+          packages = with pkgs; [
+            neovim
+            git
+            curl
+            wget
+            unzip
+            gnumake
+            cmake
+            gcc
+            ripgrep
+            fd
+            fzf
+            bat
+            eza
+            htop
+            jq
+            lua-language-server
+            rust-analyzer
+            gopls
+            clang-tools
+            nil
+            nodejs
+            pythonEnv
+            nodePackages.typescript
+            nodePackages.typescript-language-server
+            nodePackages.eslint
+            nodePackages.prettier
+            nodePackages.vscode-langservers-extracted
+            nodePackages.bash-language-server
+            nodePackages.yaml-language-server
+          ];
 
-      nodePackages = with pkgs.nodePackages; [
-        typescript
-        typescript-language-server
-        eslint
-        prettier
-        vscode-langservers-extracted
-        bash-language-server
-        yaml-language-server
-      ];
+          shellHook = ''
+            export EDITOR="nvim"
+            export VISUAL="nvim"
+          '';
+        };
     in {
-      devShells.default = pkgs.mkShell {
-        name = "Cobray";
-
-        buildInputs = [
-          pkgs.neovim
-          pkgs.git
-          pkgs.curl
-          pkgs.wget
-          pkgs.unzip
-          pkgs.gnumake
-          pkgs.cmake
-          pkgs.gcc
-          pkgs.nodejs
-          pythonEnv
-          pkgs.ripgrep
-          pkgs.fd
-          pkgs.fzf
-          pkgs.bat
-          pkgs.lua-language-server
-          pkgs.rust-analyzer
-          pkgs.gopls
-          pkgs.clang-tools
-          pkgs.nil
-          pkgs.eza
-          pkgs.htop
-          pkgs.jq
-        ];
-
-        shellHook = ''
-          export EDITOR="nvim"
-          export VISUAL="nvim"
-        '';
-      };
+      devShells.default = mkDevShellFor pkgs.python311;
+      devShells.py311 = mkDevShellFor pkgs.python311;
+      devShells.py312 = mkDevShellFor pkgs.python312;
     });
 }

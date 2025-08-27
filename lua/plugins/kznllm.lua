@@ -2,7 +2,7 @@
 local vim = vim
 
 return {
-    "chottolabs/kznllm.nvim",
+    dir = "~/kznllm.nvim",
     dependencies = { { "j-hui/fidget.nvim" } },
     config = function()
         local presets = require("kznllm.presets.basic")
@@ -50,21 +50,37 @@ return {
             :add_system_prompts({ { type = "text", path = templates.anthropic.system } })
             :add_message_prompts({ { type = "text", role = "user", path = templates.anthropic.user } })
 
+        local function auto_controls(q, sel, is_debug, max_tokens_cap)
+            local qlen = (q and #q or 0) + (sel and #sel or 0)
+            local verbosity
+            if is_debug or qlen > 4000 then
+                verbosity = "high"
+            elseif qlen < 140 then
+                verbosity = "low"
+            else
+                verbosity = "medium"
+            end
+            local effort = (verbosity == "low") and "minimal" or verbosity
+            local out = (verbosity == "high") and 16384 or (verbosity == "medium" and 8192 or 2048)
+            if max_tokens_cap and out > max_tokens_cap then
+                out = max_tokens_cap
+            end
+            return verbosity, effort, out
+        end
+
         local model_configs = {
-            gpt41 = {
-                id = "gpt-4.1",
-                description = "OpenAI GPT-4.1",
+            gpt5 = {
+                id = "gpt-5",
+                description = "OpenAI GPT-5",
                 base_url = "https://api.openai.com",
                 api_key_name = "OPENAI_API_KEY",
-                max_tokens = 12000,
+                max_tokens = 128000,
+                endpoint = "responses", -- uses Responses API
                 preset_builder = BasicOpenAIPreset,
                 params = {
-                    model = "gpt-4.1",
+                    model = "gpt-5",
                     stream = true,
-                    temperature = 0.5,
-                    top_p = 0.95,
-                    frequency_penalty = 0,
-                    presence_penalty = 0,
+                    --verbosity auto determined as needed
                 },
             },
             grok = {
@@ -104,6 +120,7 @@ return {
                     provider = openai.OpenAIProvider:new({
                         base_url = model_info.base_url,
                         api_key_name = model_info.api_key_name,
+                        endpoint = model_info.endpoint,
                     })
                 end
 
@@ -149,13 +166,28 @@ return {
                             vim.notify("[kznllm] Failed to build prompt arguments", vim.log.levels.ERROR)
                             return
                         end
+
+                        if provider.endpoint == "responses" then
+                            if curl_options.messages then
+                                curl_options.input = curl_options.messages
+                                curl_options.messages = nil
+                            end
+                            local verbosity, effort, out_tokens =
+                                auto_controls(user_query, selection, opts and opts.debug, model_info.max_tokens)
+                            curl_options.text = curl_options.text or {}
+                            curl_options.text.verbosity = verbosity
+                            curl_options.reasoning = { effort = effort }
+                            curl_options.max_output_tokens = out_tokens
+                            curl_options.stream = true
+                        end
+
                         if opts and opts.debug and preset.debug_template_path then
                             local scratch_buf_id = buffer_manager:create_scratch_buffer()
-                            local success, debug_data = pcall(utils.make_prompt_from_template, {
+                            local ok, debug_data = pcall(utils.make_prompt_from_template, {
                                 template_path = preset.debug_template_path,
                                 prompt_args = curl_options,
                             })
-                            if success and debug_data then
+                            if ok and debug_data then
                                 buffer_manager:write_content(debug_data, scratch_buf_id)
                                 vim.cmd("normal! Gzz")
                             else
@@ -193,18 +225,8 @@ return {
             end
         end
 
-        vim.keymap.set(
-            { "n", "v" },
-            "<leader>K",
-            invoke_with_opts({ debug = true }),
-            { desc = "Invoke LLM with debug mode" }
-        )
-        vim.keymap.set(
-            { "n", "v" },
-            "<leader>k",
-            invoke_with_opts({ debug = false }),
-            { desc = "Invoke LLM for completion" }
-        )
+        vim.keymap.set({ "n", "v" }, "<leader>K", invoke_with_opts({ debug = true }), { desc = "Invoke LLM (debug)" })
+        vim.keymap.set({ "n", "v" }, "<leader>k", invoke_with_opts({ debug = false }), { desc = "Invoke LLM" })
 
         local function setup_cleanup_autocmds()
             vim.api.nvim_create_augroup("LLMCleanup", { clear = true })

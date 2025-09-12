@@ -54,4 +54,3 @@ safe_set("pumheight", 10)
 local keymap = vim.keymap.set
 keymap("n", "<Tab>", ":bnext<CR>", { silent = true, desc = "Next buffer" })
 keymap("n", "<S-Tab>", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
-keymap("n", "<leader>sq", ":close<CR>", { silent = true, desc = "Close window" })

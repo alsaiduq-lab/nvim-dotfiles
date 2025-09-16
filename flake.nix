@@ -16,7 +16,6 @@
       mkDevShellFor = python: let
         pythonEnv = python.withPackages (ps:
           with ps; [
-            debugpy
             ruff
             requests
             pynvim

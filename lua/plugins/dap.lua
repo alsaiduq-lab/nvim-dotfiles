@@ -28,18 +28,7 @@ return {
         require("dap-python").setup(python_path)
 
         require("mason-nvim-dap").setup({
-            ensure_installed = {
-                "python",
-                "delve",
-                "codelldb",
-                "node2",
-                "php",
-                "js",
-                "bash",
-                "cppdbg",
-                "local-lua-debugger-vscode",
-            },
-            automatic_installation = true,
+            automatic_installation = false,
         })
 
         require("dap-go").setup()

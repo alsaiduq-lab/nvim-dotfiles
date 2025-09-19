@@ -10,16 +10,23 @@ return {
         config = function()
             ---@diagnostic disable-next-line: undefined-global
             local vim = vim
-            local ok_lsp, lspconfig = pcall(require, "lspconfig")
             local ok_cmp, cmp = pcall(require, "cmp_nvim_lsp")
-            if not (ok_lsp and ok_cmp) then
+            if not ok_cmp then
                 return
             end
 
-            local util, configs = require("lspconfig.util"), require("lspconfig.configs")
+            vim.filetype.add({
+                extension = { jsonc = "jsonc" },
+                pattern = {
+                    ["tsconfig%.json"] = "jsonc",
+                    ["tsconfig%..-%.json"] = "jsonc",
+                    [".*%.code%-workspace"] = "jsonc",
+                    ["coc%-settings%.json"] = "jsonc",
+                },
+            })
+            local util = require("lspconfig.util")
             local caps = cmp.default_capabilities()
             local unpack_ = table.unpack or unpack
-
             local custom = {}
             do
                 local path = vim.fn.stdpath("config") .. "/data/custom.lua"
@@ -67,6 +74,9 @@ return {
                     end
                     return { "ty", "server" }
                 end
+                if name == "jsonls" then
+                    return { "vscode-json-language-server", "--stdio" }
+                end
                 return cmd
             end
 
@@ -84,29 +94,21 @@ return {
                         },
                     },
                 }
+            else
+                local fts = custom.servers.jsonls.filetypes or { "json" }
+                local seen, out = {}, {}
+                for _, ft in ipairs(vim.list_extend(fts, { "jsonc" })) do
+                    if not seen[ft] then
+                        seen[ft] = true
+                        out[#out + 1] = ft
+                    end
+                end
+                custom.servers.jsonls.filetypes = out
             end
 
             local declared = {}
             for name, cfg in pairs(custom.servers or {}) do
                 declared[name] = true
-                if not configs[name] then
-                    local cmd = cfg.cmd
-                    if type(cmd) == "function" then
-                        cmd = cmd()
-                    end
-                    cmd = resolve_auto_cmd(name, cmd)
-                    configs[name] = {
-                        default_config = {
-                            name = name,
-                            cmd = cmd or { name },
-                            filetypes = cfg.filetypes or {},
-                            root_dir = root_dir_from(cfg),
-                            settings = expand(cfg.settings or {}),
-                            init_options = expand(cfg.init_options or {}),
-                            single_file_support = (cfg.single_file_support ~= false),
-                        },
-                    }
-                end
                 local setup_cfg = vim.tbl_extend("force", { capabilities = caps }, cfg or {})
                 if type(setup_cfg.cmd) == "function" then
                     setup_cfg.cmd = setup_cfg.cmd()
@@ -117,14 +119,16 @@ return {
                 end
                 setup_cfg.settings = expand(setup_cfg.settings or {})
                 setup_cfg.init_options = expand(setup_cfg.init_options or {})
-                lspconfig[name].setup(setup_cfg)
+                vim.lsp.config(name, setup_cfg)
+                vim.lsp.enable(name)
             end
 
             local ok_mason_lsp, mason_lsp = pcall(require, "mason-lspconfig")
             if ok_mason_lsp and mason_lsp.get_installed_servers then
                 for _, server in ipairs(mason_lsp.get_installed_servers()) do
-                    if not skip[server] and not declared[server] and lspconfig[server] then
-                        lspconfig[server].setup({ capabilities = caps })
+                    if not skip[server] and not declared[server] then
+                        vim.lsp.config(server, { capabilities = caps })
+                        vim.lsp.enable(server)
                     end
                 end
             end
@@ -164,6 +168,26 @@ return {
                 local win = vim.api.nvim_get_current_win()
                 vim.api.nvim_win_set_buf(win, bufnr)
                 vim.api.nvim_win_set_height(win, math.max(6, #out + 2))
+
+                local function jump_from_log()
+                    local line = vim.fn.getline(".")
+                    local ln, col = line:match("%[(%d+):(%d+)%]")
+                    if not ln then
+                        return
+                    end
+                    ln, col = tonumber(ln), math.max(0, tonumber(col) - 1)
+                    if vim.api.nvim_win_is_valid(prev_win) then
+                        vim.api.nvim_set_current_win(prev_win)
+                    end
+                    if vim.api.nvim_buf_is_valid(prev_buf) then
+                        vim.api.nvim_set_current_buf(prev_buf)
+                    end
+                    vim.api.nvim_win_set_cursor(0, { ln, col })
+                    vim.cmd("normal! zvzz")
+                end
+                vim.keymap.set("n", "<CR>", jump_from_log, { buffer = bufnr, silent = true, nowait = true })
+                vim.keymap.set("n", "<2-LeftMouse>", jump_from_log, { buffer = bufnr, silent = true, nowait = true })
+
                 vim.api.nvim_create_autocmd("WinClosed", {
                     once = true,
                     callback = function()

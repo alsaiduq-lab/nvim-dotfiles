@@ -72,31 +72,44 @@ return {
             },
             typescript = {
                 function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--single-quote", "--tab-width", "2", "--parser", "typescript" },
-                        true
-                    )
+                    return fmt_cmd("prettier", {
+                        "--stdin-filepath",
+                        fname(),
+                        "--single-quote",
+                        "--tab-width",
+                        "2",
+                        "--parser",
+                        "typescript",
+                    }, true)
                 end,
             },
             javascriptreact = {
                 function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--single-quote", "--tab-width", "2", "--parser", "jsx" },
-                        true
-                    )
+                    return fmt_cmd("prettier", {
+                        "--stdin-filepath",
+                        fname(),
+                        "--single-quote",
+                        "--tab-width",
+                        "2",
+                        "--parser",
+                        "jsx",
+                    }, true)
                 end,
             },
             typescriptreact = {
                 function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--single-quote", "--tab-width", "2", "--parser", "tsx" },
-                        true
-                    )
+                    return fmt_cmd("prettier", {
+                        "--stdin-filepath",
+                        fname(),
+                        "--single-quote",
+                        "--tab-width",
+                        "2",
+                        "--parser",
+                        "tsx",
+                    }, true)
                 end,
             },
+
             json = {
                 function()
                     return fmt_cmd(
@@ -106,6 +119,16 @@ return {
                     )
                 end,
             },
+            jsonc = {
+                function()
+                    return fmt_cmd(
+                        "prettier",
+                        { "--stdin-filepath", fname(), "--parser", "jsonc", "--tab-width", "2" },
+                        true
+                    )
+                end,
+            },
+
             html = {
                 function()
                     return fmt_cmd(
@@ -229,11 +252,7 @@ return {
                 end
                 local args = {}
                 for _, a in ipairs(def.args or {}) do
-                    if a == "$FILENAME" then
-                        table.insert(args, fname())
-                    else
-                        table.insert(args, a)
-                    end
+                    table.insert(args, a == "$FILENAME" and fname() or a)
                 end
                 return fmt_cmd(def.exe, args, def.stdin ~= false)
             end

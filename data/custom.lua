@@ -28,6 +28,22 @@ return {
             },
         },
 
+        jsonls = {
+            cmd = { "json-lsp", "--stdio" },
+            filetypes = { "json", "jsonc" },
+            root_dir_patterns = { ".git", "package.json" },
+            init_options = { provideFormatter = false },
+            settings = {
+                json = {
+                    validate = { enable = true },
+                    format = { enable = false },
+                    schemas = {},
+                    schemaDownload = { enable = true },
+                    schemaStore = { enable = true, url = "https://www.schemastore.org/api/json/catalog.json" },
+                },
+            },
+        },
+
         ty = {
             cmd = "AUTO_TY",
             filetypes = { "python" },
@@ -68,6 +84,7 @@ return {
         markdown = { "markdownlint" },
         yaml = { "yamllint" },
         json = { "jsonlint" },
+        jsonc = { "biome" },
         dockerfile = { "hadolint" },
         terraform = { "tflint" },
         proto = { "buf_lint" },
@@ -131,13 +148,7 @@ return {
             stream = "stdout",
             ignore_exitcode = true,
         },
-        systemdlint = {
-            cmd = "systemdlint",
-            args = { "-" },
-            stdin = true,
-            stream = "stdout",
-            ignore_exitcode = true,
-        },
+        systemdlint = { cmd = "systemdlint", args = { "-" }, stdin = true, stream = "stdout", ignore_exitcode = true },
         clangtidy = {
             cmd = "clang-tidy",
             args = { "$FILENAME", "--quiet" },
@@ -180,13 +191,7 @@ return {
             stream = "stdout",
             ignore_exitcode = true,
         },
-        scalafmt = {
-            cmd = "scalafmt",
-            args = { "--test" },
-            stdin = false,
-            stream = "stdout",
-            ignore_exitcode = true,
-        },
+        scalafmt = { cmd = "scalafmt", args = { "--test" }, stdin = false, stream = "stdout", ignore_exitcode = true },
         swiftlint = {
             cmd = "swiftlint",
             args = { "lint", "--use-stdin" },
@@ -215,10 +220,11 @@ return {
             stream = "stdout",
             ignore_exitcode = true,
         },
-        jsonlint = {
-            cmd = "jsonlint",
-            args = { "-c", "-" },
-            stdin = true,
+        jsonlint = { cmd = "jsonlint", args = { "-c", "-" }, stdin = true, stream = "stdout", ignore_exitcode = true },
+        biome = {
+            cmd = "biome",
+            args = { "check", "--quiet", "--formatter-enabled=false", "$FILENAME" },
+            stdin = false,
             stream = "stdout",
             ignore_exitcode = true,
         },
@@ -243,13 +249,6 @@ return {
             stream = "stdout",
             ignore_exitcode = true,
         },
-        hadolint = {
-            cmd = "hadolint",
-            args = { "-" },
-            stdin = true,
-            stream = "stdout",
-            ignore_exitcode = true,
-        },
+        hadolint = { cmd = "hadolint", args = { "-" }, stdin = true, stream = "stdout", ignore_exitcode = true },
     },
 }
-

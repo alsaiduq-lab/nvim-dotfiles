@@ -32,11 +32,50 @@ return {
             return vim.fn.fnameescape(vim.api.nvim_buf_get_name(0))
         end
 
-        local function fmt_cmd(exe, args, stdin)
-            if not has(exe) then
-                return nil
+        -- TODO: refactor this somewhere else and seperate flag or check for nix users
+        local function is_nix_user()
+            if not has("nix") then
+                return false
             end
-            return { exe = exe, args = args or {}, stdin = stdin ~= false }
+            local ok1 = vim.loop.fs_stat("/etc/NIXOS") ~= nil
+            local ok2 = (vim.env.NIX_PATH and #vim.env.NIX_PATH > 0)
+                or (vim.env.NIX_PROFILES and #vim.env.NIX_PROFILES > 0)
+            return ok1 or ok2
+        end
+        local nix_enabled = is_nix_user()
+
+        local nix_map = {
+            ["stylua"] = "stylua",
+            ["ruff"] = "ruff",
+            ["prettier"] = "nodePackages.prettier",
+            ["yamlfmt"] = "yamlfmt",
+            ["rustfmt"] = "rustfmt",
+            ["gofumpt"] = "gofumpt",
+            ["goimports"] = "goimports",
+            ["clang-format"] = "clang-tools",
+            ["alejandra"] = "alejandra",
+            ["shfmt"] = "shfmt",
+            ["sql-formatter"] = "nodePackages.sql-formatter",
+            ["fish_indent"] = "fish",
+            ["qmlformat"] = "qt6.qtdeclarative",
+        }
+
+        local function fmt_cmd(exe, args, stdin)
+            args = args or {}
+            if has(exe) then
+                return { exe = exe, args = args, stdin = stdin ~= false }
+            end
+            if nix_enabled then
+                local pkg = nix_map[exe]
+                if pkg then
+                    local nix_args = { "shell", "--quiet", "nixpkgs#" .. pkg, "-c", exe }
+                    for _, a in ipairs(args) do
+                        table.insert(nix_args, a)
+                    end
+                    return { exe = "nix", args = nix_args, stdin = stdin ~= false }
+                end
+            end
+            return nil
         end
 
         local defaults = {
@@ -54,13 +93,11 @@ return {
                     }, true)
                 end,
             },
-
             python = {
                 function()
                     return fmt_cmd("ruff", { "format", "--line-length", "120", "--respect-gitignore", "-" }, true)
                 end,
             },
-
             javascript = {
                 function()
                     return fmt_cmd(
@@ -109,7 +146,6 @@ return {
                     }, true)
                 end,
             },
-
             json = {
                 function()
                     return fmt_cmd(
@@ -128,7 +164,6 @@ return {
                     )
                 end,
             },
-
             html = {
                 function()
                     return fmt_cmd(
@@ -156,6 +191,11 @@ return {
                     )
                 end,
             },
+            qml = {
+                function()
+                    return fmt_cmd("qmlformat", { "-i", fname() }, false)
+                end,
+            },
             markdown = {
                 function()
                     return fmt_cmd("prettier", {
@@ -175,13 +215,11 @@ return {
                     return fmt_cmd("yamlfmt", { "-in", "-formatter", "indent=2,retain_line_breaks=true" }, true)
                 end,
             },
-
             rust = {
                 function()
                     return fmt_cmd("rustfmt", { "--edition", "2024", "--config", "tab_spaces=4" }, true)
                 end,
             },
-
             go = {
                 function()
                     return fmt_cmd("gofumpt", {}, true)
@@ -190,7 +228,6 @@ return {
                     return fmt_cmd("goimports", {}, true)
                 end,
             },
-
             c = {
                 function()
                     return fmt_cmd(
@@ -209,39 +246,34 @@ return {
                     )
                 end,
             },
-
             nix = {
                 function()
                     return fmt_cmd("alejandra", { "--quiet", "--threads", "4" }, true)
                 end,
             },
-
             sh = {
                 function()
                     return fmt_cmd("shfmt", { "-i", "2", "-ci", "-bn" }, true)
                 end,
             },
-
             sql = {
                 function()
                     return fmt_cmd("sql-formatter", { "--language", "sql", "--indent", "2" }, true)
                 end,
             },
-
             fish = {
                 function()
                     return fmt_cmd("fish_indent", { "--write", "--no-read-stdin", fname() }, false)
                 end,
             },
-
             nginx = {
                 function()
                     return fmt_cmd("nginx-config-formatter", { "--stdin" }, true)
                 end,
             },
-
             ["*"] = { require("formatter.filetypes.any").remove_trailing_whitespace },
         }
+
         local ft_map = vim.deepcopy(defaults)
 
         local defs = {}
@@ -268,10 +300,7 @@ return {
             end
         end
 
-        require("formatter").setup({
-            logging = false,
-            filetype = ft_map,
-        })
+        require("formatter").setup({ logging = false, filetype = ft_map })
 
         local function format_buffer()
             local bufnr = vim.api.nvim_get_current_buf()
@@ -297,7 +326,6 @@ return {
         end
 
         vim.keymap.set("n", "<leader>F", format_buffer, { noremap = true, silent = true, desc = "󰁨 Format buffer" })
-
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true }),
             callback = format_buffer,

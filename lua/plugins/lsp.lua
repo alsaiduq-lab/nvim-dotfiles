@@ -77,6 +77,15 @@ return {
                 if name == "jsonls" then
                     return { "vscode-json-language-server", "--stdio" }
                 end
+                if name == "qmlls" then
+                    if vim.fn.executable("qmlls") == 1 then
+                        return { "qmlls" }
+                    end
+                    if vim.fn.executable("nix") == 1 then
+                        return { "nix", "shell", "--quiet", "nixpkgs#qt6.qtdeclarative", "-c", "qmlls" }
+                    end
+                    return { "qmlls" }
+                end
                 return cmd
             end
 

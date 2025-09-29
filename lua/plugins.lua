@@ -18,7 +18,6 @@
 --     }
 -- })
 
--- Note: Replace 'username/plugin-name' with the actual plugin name or GitHub repo.
 -- The `ft`, `cmd`, `event`, `keys`, and `config` options are just examples;
 -- you can use one or multiple of these conditions to trigger plugin loading.
 

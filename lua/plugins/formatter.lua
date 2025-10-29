@@ -8,7 +8,7 @@ return {
         local function notify(msg, level)
             local ok, n = pcall(require, "notify")
             if ok then
-                n(msg, level, { title = "󰁨 Auto Format", timeout = 900 })
+                n(msg, level, { title = "󰁨 Format", timeout = 900 })
             else
                 print(msg)
             end

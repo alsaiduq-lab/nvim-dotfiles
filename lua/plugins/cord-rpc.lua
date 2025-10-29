@@ -8,7 +8,7 @@ return {
             log_level = vim.log.levels.OFF,
             display = {
                 theme = "catppuccin",
-                flavor = "accent",
+                flavor = "dark",
             },
             buttons = {
                 {
@@ -25,10 +25,10 @@ return {
                         return "https://github.com/alsaiduq-lab"
                     end,
                 },
-                {
-                    label = "Countdown to leave Windows 10",
-                    url = "https://monaie.ca/windows10-eos",
-                },
+                --{
+                --    label = "Countdown to leave Windows 10",
+                --    url = "https://monaie.ca/windows10-eos",
+                --},
             },
             hooks = {
                 workspace_change = function(opts)

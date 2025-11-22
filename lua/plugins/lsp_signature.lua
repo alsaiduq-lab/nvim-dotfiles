@@ -18,7 +18,6 @@ return {
             floating_window_off_y = 1,
             fix_pos = false,
             transparency = 0,
-            select_signature_key = "<C-n>",
             handler_opts = {
                 border = "rounded",
             },
@@ -26,19 +25,12 @@ return {
             shadow_blend = 0,
         })
 
-        vim.api.nvim_set_keymap(
-            "i",
-            "<C-n",
-            "<cmd>lua require('lsp_signature').toggle_float_win()<CR>",
-            { noremap = true, silent = true }
-        )
-
         vim.api.nvim_create_autocmd("LspAttach", {
             callback = function(args)
-                require("lsp_signature").on_attach({
-                    bind = true,
-                    handler_opts = { border = "rounded" },
-                }, args.buf)
+                local bufnr = args.buf
+                vim.keymap.set("i", "<C-l>", function()
+                    vim.lsp.buf.signature_help()
+                end, { buffer = bufnr, noremap = true, silent = true, desc = "Signature help" })
             end,
         })
     end,

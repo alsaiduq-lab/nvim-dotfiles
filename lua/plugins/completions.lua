@@ -1,6 +1,3 @@
----@diagnostic disable-next-line: undefined-global
-local vim = vim
-
 return {
     {
         "hrsh7th/nvim-cmp",
@@ -24,23 +21,13 @@ return {
 
             vim.g.cmp_autocomplete_enabled = true
             vim.g.cmp_documentation_enabled = true
-            local default_autocomplete = { require("cmp.types").cmp.TriggerEvent.TextChanged }
             local border_opts = {
                 border = "rounded",
                 winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
             }
 
-            local function set_cmp_autocomplete(enabled)
-                cmp.setup.buffer({
-                    completion = {
-                        autocomplete = enabled and default_autocomplete or false,
-                    },
-                })
-            end
-
             local function toggle_cmp_autocomplete()
                 vim.g.cmp_autocomplete_enabled = not vim.g.cmp_autocomplete_enabled
-                set_cmp_autocomplete(vim.g.cmp_autocomplete_enabled)
                 vim.notify(
                     "Autocomplete is now " .. (vim.g.cmp_autocomplete_enabled and "enabled" or "disabled"),
                     vim.log.levels.INFO
@@ -53,16 +40,41 @@ return {
                 vim.keymap.set("n", "<leader>A", toggle_cmp_autocomplete, { desc = "Toggle autocompletions" })
             end)
 
-            vim.api.nvim_create_autocmd("BufEnter", {
-                callback = function()
-                    set_cmp_autocomplete(vim.g.cmp_autocomplete_enabled)
-                end,
-            })
-
             vim.api.nvim_create_autocmd("FileType", {
                 pattern = "TelescopePrompt",
                 callback = function()
                     require("cmp").setup.buffer({ enabled = false })
+                end,
+            })
+
+            local completion_timer = nil
+            vim.api.nvim_create_autocmd({ "TextChangedI" }, {
+                callback = function()
+                    if not vim.g.cmp_autocomplete_enabled then
+                        return
+                    end
+
+                    if completion_timer then
+                        vim.fn.timer_stop(completion_timer)
+                    end
+
+                    completion_timer = vim.fn.timer_start(2000, function()
+                        vim.schedule(function()
+                            if vim.fn.mode() == "i" and vim.g.cmp_autocomplete_enabled then
+                                cmp.complete()
+                            end
+                        end)
+                        completion_timer = nil
+                    end)
+                end,
+            })
+
+            vim.api.nvim_create_autocmd("InsertLeave", {
+                callback = function()
+                    if completion_timer then
+                        vim.fn.timer_stop(completion_timer)
+                        completion_timer = nil
+                    end
                 end,
             })
 
@@ -122,7 +134,6 @@ return {
                     ["<C-d>"] = cmp.mapping.scroll_docs(4),
                     ["<PageUp>"] = cmp.mapping.scroll_docs(-4),
                     ["<PageDown>"] = cmp.mapping.scroll_docs(4),
-                    ["<C-Space>"] = cmp.mapping.complete(),
                     ["<C-e>"] = cmp.mapping.abort(),
                     ["<CR>"] = cmp.mapping.confirm({
                         select = false,
@@ -155,7 +166,7 @@ return {
                 }),
                 completion = {
                     completeopt = "menu,menuone,noinsert",
-                    autocomplete = vim.g.cmp_autocomplete_enabled and default_autocomplete or false,
+                    autocomplete = false,
                 },
                 experimental = {
                     ghost_text = true,

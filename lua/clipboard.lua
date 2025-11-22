@@ -7,12 +7,13 @@ local function has_clipboard()
     for _, tool in ipairs({
         "xclip",
         "wl-copy",
-        "pbcopy",
-        "clip.exe",
-        "termux-clipboard-set",
         "wl-paste",
+        "pbcopy",
         "pbpaste",
+        "clip.exe",
         "powershell.exe",
+        "termux-clipboard-set",
+        "termux-clipboard-get",
     }) do
         if vim.fn.executable(tool) == 1 then
             return true
@@ -21,14 +22,10 @@ local function has_clipboard()
     return false
 end
 
-function C.paste_prefix()
-    return vim.o.paste and "[PASTE]" or ""
-end
-
 local function system_clipboard()
     local exec = vim.fn.executable
     if exec("wl-paste") == 1 then
-        return vim.fn.system("wl-paste")
+        return vim.fn.system("wl-paste --no-newline")
     elseif exec("xclip") == 1 then
         return vim.fn.system("xclip -selection clipboard -o")
     elseif exec("pbpaste") == 1 then
@@ -39,6 +36,21 @@ local function system_clipboard()
         return vim.fn.system("termux-clipboard-get")
     end
     return ""
+end
+
+local function system_copy(content)
+    local exec = vim.fn.executable
+    if exec("wl-copy") == 1 then
+        vim.fn.system("wl-copy", content)
+    elseif exec("xclip") == 1 then
+        vim.fn.system("xclip -selection clipboard", content)
+    elseif exec("pbcopy") == 1 then
+        vim.fn.system("pbcopy", content)
+    elseif exec("clip.exe") == 1 then
+        vim.fn.system("clip.exe", content)
+    elseif exec("termux-clipboard-set") == 1 then
+        vim.fn.system("termux-clipboard-set", content)
+    end
 end
 
 local function paste()
@@ -52,8 +64,14 @@ local function paste()
     vim.api.nvim_put(vim.split(content, "\n"), "c", true, true)
     local endrow = vim.fn.line(".") - 1
     vim.cmd(("%d,%dnormal! ="):format(row, endrow))
-    if vim.lsp and vim.lsp.buf and vim.lsp.buf.format then
-        pcall(vim.lsp.buf.format, { async = false, range = { start = { row - 1, 0 }, ["end"] = { endrow, 0 } } })
+    if vim.lsp.buf.format then
+        pcall(vim.lsp.buf.format, {
+            async = false,
+            range = {
+                start = { row - 1, 0 },
+                ["end"] = { endrow, 0 },
+            },
+        })
     end
 end
 
@@ -109,17 +127,7 @@ function C.setup(opts)
     vim.api.nvim_create_user_command("Copy", function(a)
         if a.range > 0 then
             local content = table.concat(vim.api.nvim_buf_get_lines(0, a.line1 - 1, a.line2, false), "\n")
-            if vim.fn.executable("xclip") == 1 then
-                vim.fn.system("xclip -selection clipboard", content)
-            elseif vim.fn.executable("wl-copy") == 1 then
-                vim.fn.system("wl-copy", content)
-            elseif vim.fn.executable("pbcopy") == 1 then
-                vim.fn.system("pbcopy", content)
-            elseif vim.fn.executable("clip.exe") == 1 then
-                vim.fn.system("clip.exe", content)
-            elseif vim.fn.executable("termux-clipboard-set") == 1 then
-                vim.fn.system("termux-clipboard-set", content)
-            end
+            system_copy(content)
             log("Copied selection to system clipboard", vim.log.levels.INFO)
         else
             log("Select text first", vim.log.levels.ERROR)

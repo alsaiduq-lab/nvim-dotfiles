@@ -1,335 +1,161 @@
----@diagnostic disable-next-line: undefined-global
-local vim = vim
-
 return {
-    "mhartington/formatter.nvim",
+    "stevearc/conform.nvim",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
-        local function notify(msg, level)
-            local ok, n = pcall(require, "notify")
-            if ok then
-                n(msg, level, { title = "󰁨 Format", timeout = 900 })
-            else
-                print(msg)
-            end
-        end
+        local conform = require("conform")
 
-        local custom = {}
-        do
-            local p = vim.fn.stdpath("config") .. "/data/custom.lua"
-            if vim.fn.filereadable(p) == 1 then
-                local ok, mod = pcall(dofile, p)
-                if ok and type(mod) == "table" then
-                    custom = mod
-                end
-            end
-        end
-
-        local function has(bin)
-            return vim.fn.executable(bin) == 1
-        end
-        local function fname()
-            return vim.fn.fnameescape(vim.api.nvim_buf_get_name(0))
-        end
-
-        -- TODO: refactor this somewhere else and seperate flag or check for nix users
-        local function is_nix_user()
-            if not has("nix") then
-                return false
-            end
-            local ok1 = vim.loop.fs_stat("/etc/NIXOS") ~= nil
-            local ok2 = (vim.env.NIX_PATH and #vim.env.NIX_PATH > 0)
-                or (vim.env.NIX_PROFILES and #vim.env.NIX_PROFILES > 0)
-            return ok1 or ok2
-        end
-        local nix_enabled = is_nix_user()
-
-        local nix_map = {
-            ["stylua"] = "stylua",
-            ["ruff"] = "ruff",
-            ["prettier"] = "nodePackages.prettier",
-            ["yamlfmt"] = "yamlfmt",
-            ["rustfmt"] = "rustfmt",
-            ["gofumpt"] = "gofumpt",
-            ["goimports"] = "goimports",
-            ["clang-format"] = "clang-tools",
-            ["alejandra"] = "alejandra",
-            ["shfmt"] = "shfmt",
-            ["sql-formatter"] = "nodePackages.sql-formatter",
-            ["fish_indent"] = "fish",
-            ["qmlformat"] = "qt6.qtdeclarative",
-        }
-
-        local function fmt_cmd(exe, args, stdin)
-            args = args or {}
-            if has(exe) then
-                return { exe = exe, args = args, stdin = stdin ~= false }
-            end
-            if nix_enabled then
-                local pkg = nix_map[exe]
-                if pkg then
-                    local nix_args = { "shell", "--quiet", "nixpkgs#" .. pkg, "-c", exe }
-                    for _, a in ipairs(args) do
-                        table.insert(nix_args, a)
+        local function nix_cmd(exe, pkg, args)
+            return {
+                command = function()
+                    if vim.fn.executable(exe) == 1 then
+                        return exe
                     end
-                    return { exe = "nix", args = nix_args, stdin = stdin ~= false }
-                end
-            end
-            return nil
+                    return "nix"
+                end,
+                args = function(self, ctx)
+                    local resolved_args = {}
+                    if type(args) == "function" then
+                        resolved_args = args(self, ctx)
+                    else
+                        resolved_args = vim.deepcopy(args)
+                    end
+
+                    if vim.fn.executable(exe) == 1 then
+                        return resolved_args
+                    end
+
+                    local nix_preamble = { "shell", "--quiet", "nixpkgs#" .. pkg, "-c", exe }
+                    for _, v in ipairs(resolved_args) do
+                        table.insert(nix_preamble, v)
+                    end
+                    return nix_preamble
+                end,
+            }
         end
 
-        local defaults = {
-            lua = {
-                function()
-                    return fmt_cmd("stylua", {
-                        "--search-parent-directories",
-                        "--column-width",
-                        "120",
-                        "--indent-type",
-                        "Spaces",
-                        "--indent-width",
-                        "4",
-                        "-",
-                    }, true)
-                end,
-            },
-            python = {
-                function()
-                    return fmt_cmd("ruff", { "format", "--line-length", "120", "--respect-gitignore", "-" }, true)
-                end,
-            },
-            javascript = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--single-quote", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            typescript = {
-                function()
-                    return fmt_cmd("prettier", {
-                        "--stdin-filepath",
-                        fname(),
-                        "--single-quote",
-                        "--tab-width",
-                        "2",
-                        "--parser",
-                        "typescript",
-                    }, true)
-                end,
-            },
-            javascriptreact = {
-                function()
-                    return fmt_cmd("prettier", {
-                        "--stdin-filepath",
-                        fname(),
-                        "--single-quote",
-                        "--tab-width",
-                        "2",
-                        "--parser",
-                        "jsx",
-                    }, true)
-                end,
-            },
-            typescriptreact = {
-                function()
-                    return fmt_cmd("prettier", {
-                        "--stdin-filepath",
-                        fname(),
-                        "--single-quote",
-                        "--tab-width",
-                        "2",
-                        "--parser",
-                        "tsx",
-                    }, true)
-                end,
-            },
-            json = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--parser", "json", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            jsonc = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--parser", "jsonc", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            html = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--parser", "html", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            css = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--parser", "css", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            scss = {
-                function()
-                    return fmt_cmd(
-                        "prettier",
-                        { "--stdin-filepath", fname(), "--parser", "scss", "--tab-width", "2" },
-                        true
-                    )
-                end,
-            },
-            qml = {
-                function()
-                    return fmt_cmd("qmlformat", { "-i", fname() }, false)
-                end,
-            },
-            markdown = {
-                function()
-                    return fmt_cmd("prettier", {
-                        "--stdin-filepath",
-                        fname(),
-                        "--parser",
-                        "markdown",
-                        "--prose-wrap",
-                        "always",
-                        "--tab-width",
-                        "2",
-                    }, true)
-                end,
-            },
-            yaml = {
-                function()
-                    return fmt_cmd("yamlfmt", { "-in", "-formatter", "indent=2,retain_line_breaks=true" }, true)
-                end,
-            },
-            rust = {
-                function()
-                    return fmt_cmd("rustfmt", { "--edition", "2024", "--config", "tab_spaces=4" }, true)
-                end,
-            },
-            go = {
-                function()
-                    return fmt_cmd("gofumpt", {}, true)
-                end,
-                function()
-                    return fmt_cmd("goimports", {}, true)
-                end,
-            },
-            c = {
-                function()
-                    return fmt_cmd(
-                        "clang-format",
-                        { "--style={BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 120}" },
-                        true
-                    )
-                end,
-            },
-            cpp = {
-                function()
-                    return fmt_cmd(
-                        "clang-format",
-                        { "--style={BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 120}" },
-                        true
-                    )
-                end,
-            },
-            nix = {
-                function()
-                    return fmt_cmd("alejandra", { "--quiet", "--threads", "4" }, true)
-                end,
-            },
-            sh = {
-                function()
-                    return fmt_cmd("shfmt", { "-i", "2", "-ci", "-bn" }, true)
-                end,
-            },
-            sql = {
-                function()
-                    return fmt_cmd("sql-formatter", { "--language", "sql", "--indent", "2" }, true)
-                end,
-            },
-            fish = {
-                function()
-                    return fmt_cmd("fish_indent", { "--write", "--no-read-stdin", fname() }, false)
-                end,
-            },
-            nginx = {
-                function()
-                    return fmt_cmd("nginx-config-formatter", { "--stdin" }, true)
-                end,
-            },
-            ["*"] = { require("formatter.filetypes.any").remove_trailing_whitespace },
-        }
+        conform.setup({
+            formatters = {
+                ruff = nix_cmd("ruff", "ruff", {
+                    "format",
+                    "--line-length",
+                    "120",
+                    "--respect-gitignore",
+                    "-",
+                }),
 
-        local ft_map = vim.deepcopy(defaults)
+                clang_format = nix_cmd("clang-format", "clang-tools", {
+                    "--style={BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 120}",
+                }),
 
-        local defs = {}
-        for name, def in pairs(custom.formatter_defs or {}) do
-            defs[name] = function()
-                if not def.exe then
-                    return nil
+                shfmt = nix_cmd("shfmt", "shfmt", {
+                    "-i",
+                    "2",
+                    "-ci",
+                    "-bn",
+                }),
+
+                alejandra = nix_cmd("alejandra", "alejandra", { "--quiet" }),
+
+                nginx = nix_cmd("nginx-config-formatter", "nginx-config-formatter", { "--stdin" }),
+
+                stylua = nix_cmd("stylua", "stylua", {
+                    "--search-parent-directories",
+                    "--column-width",
+                    "120",
+                    "--indent-type",
+                    "Spaces",
+                    "--indent-width",
+                    "4",
+                    "-",
+                }),
+
+                prettier = nix_cmd("prettier", "nodePackages.prettier", {
+                    "--stdin-filepath",
+                    "$FILENAME",
+                    "--single-quote",
+                    "--tab-width",
+                    "2",
+                }),
+
+                gofumpt = nix_cmd("gofumpt", "gofumpt", {}),
+                goimports = nix_cmd("goimports", "goimports", {}),
+                rustfmt = nix_cmd("rustfmt", "rustfmt", { "--edition", "2021" }),
+                yamlfmt = nix_cmd("yamlfmt", "yamlfmt", {
+                    "-in",
+                    "-formatter",
+                    "indent=2,retain_line_breaks=true",
+                }),
+            },
+
+            formatters_by_ft = {
+                lua = { "stylua" },
+                python = { "ruff" },
+                c = { "clang_format" },
+                cpp = { "clang_format" },
+                sh = { "shfmt" },
+                bash = { "shfmt" },
+                zsh = { "shfmt" },
+                nix = { "alejandra" },
+                javascript = { "prettier" },
+                typescript = { "prettier" },
+                javascriptreact = { "prettier" },
+                typescriptreact = { "prettier" },
+                json = { "prettier" },
+                jsonc = { "prettier" },
+                html = { "prettier" },
+                css = { "prettier" },
+                scss = { "prettier" },
+                markdown = { "prettier" },
+                yaml = { "yamlfmt" },
+                nginx = { "nginx" },
+                rust = { "rustfmt" },
+                go = { "gofumpt", "goimports" },
+                ["*"] = { "trim_whitespace" },
+            },
+            notify_on_error = false,
+        })
+
+        vim.keymap.set("n", "<leader>F", function()
+            local formatters = conform.list_formatters()
+            local names = vim.tbl_map(function(f)
+                return f.name
+            end, formatters)
+
+            conform.format({ async = true, lsp_fallback = false, timeout_ms = 5000 }, function(err)
+                if err then
+                    local msg = "Format failed: " .. err
+                    if #names > 0 then
+                        msg = msg .. "\nAttempted: " .. table.concat(names, ", ")
+                    end
+                    msg = msg .. "\n\nCheck formatter installation and file syntax"
+                    vim.notify(msg, vim.log.levels.ERROR)
+                elseif #names > 0 then
+                    vim.notify("Formatted: " .. table.concat(names, ", "), vim.log.levels.INFO)
                 end
-                local args = {}
-                for _, a in ipairs(def.args or {}) do
-                    table.insert(args, a == "$FILENAME" and fname() or a)
-                end
-                return fmt_cmd(def.exe, args, def.stdin ~= false)
-            end
-        end
-
-        for ft, list in pairs(custom.formatters_by_ft or {}) do
-            ft_map[ft] = ft_map[ft] or {}
-            for _, name in ipairs(list) do
-                local maker = defs[name]
-                if maker then
-                    table.insert(ft_map[ft], maker)
-                end
-            end
-        end
-
-        require("formatter").setup({ logging = false, filetype = ft_map })
-
-        local function format_buffer()
-            local bufnr = vim.api.nvim_get_current_buf()
-            if not vim.api.nvim_buf_is_valid(bufnr) then
-                notify("Invalid buffer", vim.log.levels.ERROR)
-                return false
-            end
-            local ft = vim.bo.filetype
-            if ft == "" or not ft_map[ft] or #ft_map[ft] == 0 then
-                return false
-            end
-            local view = vim.fn.winsaveview()
-            local ok, err = pcall(function()
-                vim.cmd("silent! FormatWrite")
             end)
-            vim.fn.winrestview(view)
-            if ok then
-                notify("Formatted", vim.log.levels.INFO)
-            else
-                notify("Format failed: " .. tostring(err), vim.log.levels.ERROR)
-            end
-            return ok
-        end
+        end, { desc = "Format buffer" })
 
-        vim.keymap.set("n", "<leader>F", format_buffer, { noremap = true, silent = true, desc = "󰁨 Format buffer" })
         vim.api.nvim_create_autocmd("BufWritePre", {
-            group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true }),
-            callback = format_buffer,
-            desc = "Auto-format",
+            pattern = "*",
+            callback = function(args)
+                local formatters = conform.list_formatters(args.buf)
+                local names = vim.tbl_map(function(f)
+                    return f.name
+                end, formatters)
+
+                conform.format({ bufnr = args.buf, timeout_ms = 5000 }, function(err)
+                    if err then
+                        local msg = "Format failed: " .. err
+                        if #names > 0 then
+                            msg = msg .. "\nAttempted: " .. table.concat(names, ", ")
+                        end
+                        msg = msg .. "\n\nCheck formatter installation and file syntax"
+                        vim.notify(msg, vim.log.levels.ERROR)
+                    elseif #names > 0 then
+                        vim.notify("Formatted: " .. table.concat(names, ", "), vim.log.levels.INFO)
+                    end
+                end)
+            end,
         })
     end,
 }

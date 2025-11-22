@@ -8,8 +8,6 @@ return {
             "hrsh7th/cmp-nvim-lsp",
         },
         config = function()
-            ---@diagnostic disable-next-line: undefined-global
-            local vim = vim
             local ok_cmp, cmp = pcall(require, "cmp_nvim_lsp")
             if not ok_cmp then
                 return

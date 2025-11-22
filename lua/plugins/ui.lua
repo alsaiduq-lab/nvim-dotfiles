@@ -49,8 +49,6 @@ return {
                     hover = {
                         enabled = true,
                         silent = false,
-                        view = nil,
-                        opts = {},
                     },
                     signature = {
                         enabled = true,
@@ -60,13 +58,10 @@ return {
                             luasnip = true,
                             throttle = 50,
                         },
-                        view = nil,
-                        opts = {},
                     },
                     message = {
                         enabled = true,
                         view = "notify",
-                        opts = {},
                     },
                     documentation = {
                         view = "hover",
@@ -149,96 +144,11 @@ return {
                     bottom_search = false,
                     command_palette = true,
                     long_message_to_split = true,
-                    inc_rename = false,
+                    inc_rename = true,
                     lsp_doc_border = true,
                 },
             })
         end,
-    },
-    {
-        "stevearc/dressing.nvim",
-        event = "VeryLazy",
-        opts = {
-            input = {
-                enabled = true,
-                default_prompt = "Input",
-                trim_prompt = true,
-                title_pos = "left",
-                insert_only = true,
-                start_in_insert = true,
-                border = "rounded",
-                relative = "cursor",
-                prefer_width = 40,
-                width = nil,
-                max_width = { 140, 0.9 },
-                min_width = { 20, 0.2 },
-                buf_options = {},
-                win_options = {
-                    wrap = false,
-                    list = true,
-                    listchars = "precedes:…,extends:…",
-                    sidescrolloff = 0,
-                },
-                mappings = {
-                    n = {
-                        ["<Esc>"] = "Close",
-                        ["<CR>"] = "Confirm",
-                    },
-                    i = {
-                        ["<C-c>"] = "Close",
-                        ["<CR>"] = "Confirm",
-                        ["<Up>"] = "HistoryPrev",
-                        ["<Down>"] = "HistoryNext",
-                    },
-                },
-                override = function(conf)
-                    return conf
-                end,
-                get_config = nil,
-            },
-            select = {
-                enabled = true,
-                backend = { "telescope", "builtin", "nui" },
-                trim_prompt = true,
-                telescope = require("telescope.themes").get_dropdown({
-                    borderchars = {
-                        { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
-                        prompt = { "─", "│", " ", "│", "┌", "┐", "│", "│" },
-                        results = { "─", "│", "─", "│", "├", "┤", "┘", "└" },
-                        preview = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
-                    },
-                    width = 0.8,
-                    previewer = false,
-                    prompt_title = false,
-                }),
-                builtin = {
-                    show_numbers = true,
-                    border = "rounded",
-                    relative = "editor",
-                    buf_options = {},
-                    win_options = {
-                        cursorline = true,
-                        cursorlineopt = "both",
-                    },
-                    width = nil,
-                    max_width = { 140, 0.8 },
-                    min_width = { 40, 0.2 },
-                    height = nil,
-                    max_height = 0.9,
-                    min_height = { 10, 0.2 },
-                    mappings = {
-                        ["<Esc>"] = "Close",
-                        ["<C-c>"] = "Close",
-                        ["<CR>"] = "Confirm",
-                    },
-                    override = function(conf)
-                        return conf
-                    end,
-                },
-                format_item_override = {},
-                get_config = nil,
-            },
-        },
     },
     {
         "anuvyklack/windows.nvim",
@@ -271,58 +181,5 @@ return {
                 },
             })
         end,
-    },
-    {
-        "pmizio/typescript-tools.nvim",
-        ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "neovim/nvim-lspconfig",
-        },
-        opts = {
-            on_attach = function(client, bufnr)
-                client.server_capabilities.documentFormattingProvider = false
-                client.server_capabilities.documentRangeFormattingProvider = false
-
-                local opts = { silent = true, buffer = bufnr }
-                vim.keymap.set("n", "Gs", "<cmd>TSToolsOrganizeImports<CR>", opts)
-                vim.keymap.set("n", "Gi", "<cmd>TSToolsRenameFile<CR>", opts)
-                vim.keymap.set("n", "Go", "<cmd>TSToolsAddMissingImports<CR>", opts)
-                vim.keymap.set("n", "Gu", "<cmd>TSToolsRemoveUnusedImports<CR>", opts)
-                vim.keymap.set("n", "Gd", vim.lsp.buf.definition, opts)
-                vim.keymap.set("n", "Gk", vim.lsp.buf.hover, opts)
-                vim.keymap.set("n", "Gr", vim.lsp.buf.references, opts)
-            end,
-            settings = {
-                separate_diagnostic_server = true,
-                publish_diagnostic_on = "insert_leave",
-                expose_as_code_action = "all",
-                tsserver_path = nil,
-                tsserver_plugins = {},
-                tsserver_max_memory = "auto",
-                tsserver_format_options = {},
-                tsserver_file_preferences = {
-                    includeInlayParameterNameHints = "all",
-                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                    includeInlayFunctionParameterTypeHints = true,
-                    includeInlayVariableTypeHints = true,
-                    includeInlayVariableTypeHintsWhenTypeMatchesName = false,
-                    includeInlayPropertyDeclarationTypeHints = true,
-                    includeInlayFunctionLikeReturnTypeHints = true,
-                    includeInlayEnumMemberValueHints = true,
-                    importModuleSpecifierPreference = "non-relative",
-                    quotePreference = "auto",
-                },
-                tsserver_locale = "en",
-                complete_function_calls = false,
-                include_completions_with_insert_text = true,
-                code_lens = "off",
-                disable_member_code_lens = true,
-                jsx_close_tag = {
-                    enable = false,
-                    filetypes = { "javascriptreact", "typescriptreact" },
-                },
-            },
-        },
     },
 }

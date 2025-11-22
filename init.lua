@@ -1,8 +1,6 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-require("python").setup()
-
 if vim.fn.has("win32") == 1 then
     require("hotfix").setup()
 end

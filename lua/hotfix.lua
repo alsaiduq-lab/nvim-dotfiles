@@ -1,6 +1,3 @@
----@diagnostic disable-next-line: undefined-global
-local vim = vim
-
 local W = {}
 
 local function find_python3_host_prog()
@@ -21,34 +18,30 @@ local function find_python3_host_prog()
             return path
         end
     end
+
     return nil
 end
 
 function W.setup()
-    if vim.fn.has("win32") == 1 then
-        vim.g.loaded_python_provider = 0
+    vim.g.loaded_python_provider = 0
 
-        local py3_prog = find_python3_host_prog()
-        if py3_prog then
-            vim.g.python3_host_prog = py3_prog
-            vim.notify("Set python3_host_prog: " .. py3_prog, vim.log.levels.INFO)
-        else
-            vim.notify("No suitable python3 executable found for Neovim.", vim.log.levels.WARN)
-        end
-
-        vim.opt.emoji = true
-        vim.opt.encoding = "utf-8"
-        vim.opt.fileencoding = "utf-8"
-        vim.opt.ambiwidth = "single"
-
-        vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-            pattern = "*",
-            callback = function()
-                vim.opt_local.fileencoding = "utf-8"
-                vim.opt_local.bomb = false
-            end,
-        })
+    local py3_prog = find_python3_host_prog()
+    if py3_prog then
+        vim.g.python3_host_prog = py3_prog
+    else
+        vim.notify("No suitable python3 executable found for Neovim.", vim.log.levels.WARN)
     end
+    vim.opt.emoji = true
+    vim.opt.encoding = "utf-8"
+    vim.opt.fileencoding = "utf-8"
+    vim.opt.ambiwidth = "single"
+    vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+        pattern = "*",
+        callback = function()
+            vim.opt_local.fileencoding = "utf-8"
+            vim.opt_local.bomb = false
+        end,
+    })
 end
 
 return W

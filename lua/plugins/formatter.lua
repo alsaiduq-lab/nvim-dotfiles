@@ -329,7 +329,7 @@ return {
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true }),
             callback = format_buffer,
-            desc = "Auto-format on save",
+            desc = "Auto-format",
         })
     end,
 }
